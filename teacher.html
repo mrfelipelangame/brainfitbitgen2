@@ -5,296 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrainFitBit - Teacher Admin</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --success: #10b981;
-            --danger: #ef4444;
-            --bg: #f8fafc;
-            --text: #1e293b;
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; margin: 0; padding: 20px; }
-        
-        .nav-header {
-            max-width: 900px;
-            margin: 0 auto 20px auto;
-            display: flex;
-            justify-content: flex-start;
-        }
-
-        .btn-home {
-            background: var(--success);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: opacity 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-        .btn-home:hover { opacity: 0.9; }
-
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        h1 { color: var(--primary); text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 10px; }
-        h2 { font-size: 1.25rem; margin-top: 30px; color: #475569; display: flex; align-items: center; gap: 10px; }
-        
+        :root { --primary: #2563eb; --success: #10b981; --danger: #ef4444; --bg: #f8fafc; --text: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .nav-header { max-width: 900px; margin: 0 auto 20px; }
+        .btn-home { background: var(--success); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
-        
+        .card { padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; }
         label { display: block; font-weight: 600; margin: 10px 0 5px; font-size: 0.9rem; }
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
-        
-        /* Estilo para o Checkbox do Timer */
-        .timer-config {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-            padding: 10px;
-            background: #f1f5f9;
-            border-radius: 6px;
-        }
-        .timer-config input { width: auto; cursor: pointer; }
-
-        button { width: 100%; padding: 12px; margin-top: 15px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-        .btn-alt { background: #64748b; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        button { width: 100%; padding: 12px; margin-top: 10px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; }
+        .timer-config { display: flex; align-items: center; gap: 10px; background: #f1f5f9; padding: 10px; border-radius: 6px; margin-top: 10px; }
+        .timer-config input { width: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         td { border: 1px solid #e2e8f0; text-align: center; padding: 8px; }
         .correct { background: #dcfce7; color: #166534; font-weight: bold; border: 2px solid #10b981; }
         .wrong { background: #fee2e2; color: #991b1b; font-weight: bold; border: 2px solid #ef4444; }
-        
-        hr { border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0; }
         #generated-link { background: #f1f5f9; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 11px; word-break: break-all; margin-top: 10px; display: none; border: 1px dashed #cbd5e1; }
-        
-        .time-badge {
-            background: var(--danger);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
+        .time-badge { background: var(--danger); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
-
-<div class="nav-header">
-    <button class="btn-home" onclick="window.location.href='index.html'">🏠 Home</button>
-</div>
-
+<div class="nav-header"><button class="btn-home" onclick="window.location.href='index.html'">🏠 Home</button></div>
 <div class="container">
-    <h1>BrainFitBit Teacher Dashboard</h1>
-
+    <h1>Teacher Dashboard</h1>
     <div class="grid">
         <section class="card">
-            <h2>👤 Register Student</h2>
-            <label>Full Name</label>
-            <input type="text" id="new-student-name" placeholder="Ex: Maria Silva">
-            <label>Email Address</label>
-            <input type="email" id="new-student-email" placeholder="maria@email.com">
-            <button onclick="registerStudent()">Add Student</button>
-            <p id="register-msg" style="color:var(--success); font-size: 0.8rem; margin-top: 5px;"></p>
+            <h2>👤 Student</h2>
+            <input type="text" id="new-name" placeholder="Name"><input type="email" id="new-email" placeholder="Email">
+            <button onclick="register()">Add Student</button>
         </section>
-
         <section class="card">
-            <h2>⚙️ Homework Config</h2>
-            <label>Select Student</label>
-            <select id="teacher-student-select"></select>
-            
-            <label>Method</label>
-            <select id="teacher-method">
-                <option>Simple</option>
-                <option>Small Friend</option>
-                <option>Big Friend</option>
-                <option>Mixed</option>
-                <option>All</option>
-            </select>
-
-            <div style="display: flex; gap: 10px;">
-                <div><label>Cols</label><input type="number" id="teacher-cols" value="3"></div>
-                <div><label>Rows</label><input type="number" id="teacher-rows" value="5"></div>
-                <div><label>Qty</label><input type="number" id="teacher-questions" value="5"></div>
+            <h2>⚙️ Config</h2>
+            <select id="student-sel"></select>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="cols" value="2" title="Cols">
+                <input type="number" id="rows" value="5" title="Rows">
+                <input type="number" id="qty" value="5" title="Qty">
             </div>
-
-            <div class="timer-config">
-                <input type="checkbox" id="enable-timer" checked>
-                <label style="margin:0; cursor:pointer;" for="enable-timer">Enable Stopwatch for Student</label>
-            </div>
+            <div class="timer-config"><input type="checkbox" id="timer-check" checked> <label for="timer-check">Enable Stopwatch</label></div>
         </section>
     </div>
-
-    <div style="display: flex; gap: 10px;">
-        <button onclick="generateHomeworkLink()">🔗 Generate & Copy Link</button>
-        <button onclick="sendHomework()" style="background: var(--success);">📧 Send via EmailJS</button>
-    </div>
+    <button onclick="generateLink()">🔗 Generate Link</button>
     <div id="generated-link"></div>
-    <p id="email-msg" style="text-align: center; color: var(--success); font-weight: bold;"></p>
-
     <hr>
-
-    <h2>📊 Review Student Submissions</h2>
-    <div class="card">
-        <label>Upload the result file:</label>
-        <input type="file" id="json-file" accept=".json">
-        <button class="btn-alt" onclick="loadStudentAnswers()">Analyze Results</button>
-    </div>
-    <div id="answers-container" style="margin-top: 20px;"></div>
+    <h2>📊 Review Results</h2>
+    <div class="card"><input type="file" id="json-file"><button style="background:#64748b" onclick="loadResults()">Analyze Results</button></div>
+    <div id="results"></div>
 </div>
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-
 <script>
-    (function(){ emailjs.init('MukrMYpsZqIkdIG0s'); })();
-
-    function loadStudents() {
-        const students = JSON.parse(localStorage.getItem("students") || "[]");
-        const select = document.getElementById("teacher-student-select");
-        select.innerHTML = "<option value=''>-- Select Student --</option>";
-        students.forEach(s => {
-            const opt = document.createElement("option");
-            opt.value = s.email;
-            opt.text = `${s.name} (${s.email})`;
-            select.appendChild(opt);
-        });
+    function register() {
+        const n = document.getElementById("new-name").value, e = document.getElementById("new-email").value;
+        let s = JSON.parse(localStorage.getItem("students") || "[]");
+        s.push({name: n, email: e}); localStorage.setItem("students", JSON.stringify(s)); load();
     }
-
-    function registerStudent() {
-        const name = document.getElementById("new-student-name").value.trim();
-        const email = document.getElementById("new-student-email").value.trim();
-        if (!name || !email) { alert("Error: Name and Email are required."); return; }
-        let students = JSON.parse(localStorage.getItem("students") || "[]");
-        if (students.find(s => s.email === email)) { alert("Error: Student email already registered."); return; }
-        students.push({name, email});
-        localStorage.setItem("students", JSON.stringify(students));
-        loadStudents();
-        document.getElementById("register-msg").innerText = "✔ Student registered successfully!";
-        setTimeout(() => document.getElementById("register-msg").innerText = "", 3000);
-        document.getElementById("new-student-name").value = "";
-        document.getElementById("new-student-email").value = "";
+    function load() {
+        const s = JSON.parse(localStorage.getItem("students") || "[]");
+        const sel = document.getElementById("student-sel");
+        sel.innerHTML = s.map(x => `<option value="${x.email}">${x.name}</option>`).join('');
     }
-
-    function getTaskParams() {
-        const select = document.getElementById("teacher-student-select");
-        if (!select.value) return null;
-
-        return {
-            name: select.options[select.selectedIndex].text.split(" (")[0],
-            email: select.value,
-            method: document.getElementById("teacher-method").value,
-            cols: Math.max(1, parseInt(document.getElementById("teacher-cols").value) || 1),
-            rows: Math.max(1, parseInt(document.getElementById("teacher-rows").value) || 1),
-            q: Math.max(1, parseInt(document.getElementById("teacher-questions").value) || 1),
-            timer: document.getElementById("enable-timer").checked // Parâmetro do timer
-        };
+    function generateLink() {
+        const sel = document.getElementById("student-sel");
+        if(!sel.value) return alert("Select student");
+        const name = sel.options[sel.selectedIndex].text;
+        const url = `${window.location.href.replace('teacher.html','student.html')}?student=${encodeURIComponent(name)}&cols=${document.getElementById('cols').value}&rows=${document.getElementById('rows').value}&q=${document.getElementById('qty').value}&timer=${document.getElementById('timer-check').checked}`;
+        document.getElementById("generated-link").innerText = url;
+        document.getElementById("generated-link").style.display = "block";
+        navigator.clipboard.writeText(url); alert("Link copied!");
     }
-
-    function getStudentBaseUrl() {
-        const currentUrl = window.location.href;
-        const folderPath = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
-        return `${folderPath}/student.html`;
-    }
-
-    // ATUALIZADO: Inclui o parâmetro do timer na URL
-    function generateHomeworkLink() {
-        const data = getTaskParams();
-        if (!data) { alert("Please select a student from the list."); return; }
-
-        const baseUrl = getStudentBaseUrl();
-        const url = `${baseUrl}?student=${encodeURIComponent(data.name)}&method=${encodeURIComponent(data.method)}&cols=${data.cols}&rows=${data.rows}&q=${data.q}&timer=${data.timer}`;
-        
-        const linkBox = document.getElementById("generated-link");
-        linkBox.innerText = url;
-        linkBox.style.display = "block";
-        
-        navigator.clipboard.writeText(url).then(() => {
-            alert("Success: Link generated with Timer settings and copied!");
-        });
-    }
-
-    function sendHomework() {
-        const data = getTaskParams();
-        if (!data) { alert("Please select a student."); return; }
-
-        const baseUrl = getStudentBaseUrl();
-        const homeworkLink = `${baseUrl}?student=${encodeURIComponent(data.name)}&method=${encodeURIComponent(data.method)}&cols=${data.cols}&rows=${data.rows}&q=${data.q}&timer=${data.timer}`;
-        
-        emailjs.send('service_qs2cyzt', 'template_u09c9if', {
-            student_name: data.name,
-            homework_link: homeworkLink,
-            to_email: data.email
-        }).then(() => {
-            document.getElementById("email-msg").innerText = "📧 Homework sent successfully!";
-            setTimeout(() => document.getElementById("email-msg").innerText = "", 4000);
-        }, (err) => {
-            alert("EmailJS Error: " + JSON.stringify(err));
-        });
-    }
-
-    function loadStudentAnswers() {
-        const fileInput = document.getElementById("json-file");
-        if (fileInput.files.length === 0) { alert("Please select a valid .json file."); return; }
-        
+    function loadResults() {
+        const file = document.getElementById("json-file").files[0];
         const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = JSON.parse(e.target.result);
-                renderResults(data);
-            } catch (err) { alert("Error parsing JSON file."); }
-        };
-        reader.readAsText(fileInput.files[0]);
+        reader.onload = (e) => render(JSON.parse(e.target.result));
+        reader.readAsText(file);
     }
-
-    // ATUALIZADO: Mostra o tempo total gasto na análise
-    function renderResults(data) {
-        const container = document.getElementById("answers-container");
-        container.innerHTML = "";
-        
-        // Verifica se há informação de tempo no arquivo (pegando do primeiro item ou da estrutura do JSON)
-        const totalTime = data[0]?.time || "N/A";
-
-        const summaryHeader = document.createElement("div");
-        summaryHeader.innerHTML = `<h3>Submission Details: <span class="time-badge">⏱ Total Time: ${totalTime}</span></h3>`;
-        container.appendChild(summaryHeader);
-
-        data.forEach((item, index) => {
-            let correctAnswers = 0;
-            let tableContent = "<table>";
-            
-            item.moves.forEach(row => {
-                tableContent += "<tr>" + row.map(val => `<td>${val}</td>`).join("") + "</tr>";
-            });
-
-            tableContent += "<tr>";
-            item.studentAnswers.forEach(ans => {
-                const isCorrect = (ans == item.total);
-                if (isCorrect) correctAnswers++;
-                tableContent += `<td class="${isCorrect ? 'correct' : 'wrong'}">${ans || 'N/A'}</td>`;
-            });
-            tableContent += "</tr></table>";
-
-            const resultCard = document.createElement("div");
-            resultCard.className = "card";
-            resultCard.style.marginBottom = "20px";
-            resultCard.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong>Question #${index + 1}</strong>
-                    <span style="background:#e2e8f0; padding:2px 8px; border-radius:12px; font-size:0.8rem;">
-                        Score: ${correctAnswers} / ${item.studentAnswers.length}
-                    </span>
-                </div>
-                ${tableContent}
-                <div style="font-size:0.8rem; margin-top:5px; color:#64748b;">Target Sum: ${item.total}</div>
-            `;
-            container.appendChild(resultCard);
+    function render(data) {
+        const res = document.getElementById("results");
+        res.innerHTML = `<h3>⏱ Time spent: <span class="time-badge">${data[0].time || 'N/A'}</span></h3>`;
+        data.forEach((item, idx) => {
+            let table = "<table>";
+            item.moves.forEach(row => { table += `<tr>${row.map(v => `<td>${v}</td>`).join('')}</tr>`; });
+            const ans = item.studentAnswers[0];
+            const isCorrect = ans == item.total;
+            table += `<tr><td class="${isCorrect?'correct':'wrong'}">${ans || 'Empty'}</td></tr></table>`;
+            res.innerHTML += `<div class="card"><strong>Q${idx+1}</strong> (Target: ${item.total}) ${table}</div>`;
         });
     }
-
-    window.onload = loadStudents;
+    window.onload = load;
 </script>
 </body>
 </html>
