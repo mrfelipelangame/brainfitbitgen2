@@ -1,89 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BrainFitBit - Soroban Trainer</title>
-    <style>
-        :root {
-            --primary: #2563eb;
-            --success: #10b981;
-            --danger: #ef4444;
-            --bg: #f8fafc;
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: #1e293b; line-height: 1.6; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* BOTÕES FIXOS NO TOPO */
-        .nav-top { position: fixed; top: 15px; width: 100%; max-width: 500px; display: flex; justify-content: space-between; z-index: 1000; padding: 0 15px; box-sizing: border-box; }
-        .btn-nav { width: auto !important; padding: 8px 15px !important; margin: 0 !important; font-size: 0.9rem !important; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrainFitBit - Soroban Trainer</title>
+<style>
+    /* SUA ESTÉTICA ORIGINAL MANTIDA */
+    body { font-family:"Comic Sans MS",cursive,sans-serif; max-width:950px; margin:auto; padding:20px; background:#a0daf3; color:#2c3e50; }
+    #welcome-screen,#menu-container,#table-container { text-align:center; background:rgba(255,255,255,0.95); padding:30px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.1); margin-top:20px; }
+    h1 { color:#1a73e8; margin-bottom:10px; }
+    input,select,button { padding:10px; margin:5px; border-radius:8px; border:1px solid #ccc; font-size:1rem; }
+    button { cursor:pointer; background:#2196F3; color:white; border:none; font-weight:bold; transition:transform .2s; }
+    button:hover { transform:scale(1.05); background:#1976D2; }
+    
+    /* CONFIGURAÇÃO DO LAYOUT DE CARTÕES */
+    .equation-card { display: none; animation: fadeIn 0.3s; }
+    .equation-card.active { display: block; }
+    
+    table { border-collapse:collapse; margin:auto; background:white; border-radius:8px; min-width: 200px; }
+    td { border:1px solid #555; text-align:center; font-size:32px; font-weight:bold; padding:15px; }
+    
+    .answer-input-large { width:150px; text-align:center; font-size:28px; font-weight:bold; border-radius:5px; border:3px solid #2196F3; margin-top:20px; }
+    
+    /* ESTÉTICA DA CORREÇÃO DETALHADA */
+    .result-item { background:white; padding:15px; margin:10px auto; border-radius:10px; border:2px solid #ccc; max-width:500px; text-align:left; }
+    .res-correct { border-left: 8px solid #4CAF50; }
+    .res-wrong { border-left: 8px solid #f44336; }
+    .wrong-val { color: #f44336; text-decoration: line-through; font-size: 1.1rem; }
+    .correct-val { color: #4CAF50; font-weight: bold; font-size: 1.3rem; display: block; }
 
-        .container { max-width: 500px; width: 100%; margin-top: 60px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); box-sizing: border-box; text-align: center; }
-        
-        h1 { color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        label { display: block; font-weight: 600; margin: 10px 0 5px; font-size: 0.9rem; text-align: left; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; margin-bottom: 10px; }
-        
-        button { width: 100%; padding: 12px; margin-top: 15px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; }
-        
-        /* LÓGICA DE EXIBIÇÃO UM POR UM */
-        .equation-card { display: none; }
-        .equation-card.active { display: block; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        td { border: 1px solid #e2e8f0; text-align: center; padding: 15px; font-size: 2rem; font-weight: bold; }
-        
-        .answer-input { font-size: 1.8rem; text-align: center; border: 2px solid var(--primary); margin-top: 15px; }
+    #home-btn { position:fixed; top:20px; left:20px; background:#4CAF50; z-index:1000; }
+    #teacher-btn { position:fixed; top:20px; right:20px; background:#f44336; z-index:1000; }
 
-        /* ESTÉTICA DA CORREÇÃO */
-        .res-card { text-align: left; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-        .res-correct { border-left: 5px solid var(--success); background: #f0fdf4; }
-        .res-wrong { border-left: 5px solid var(--danger); background: #fef2f2; }
-        .err-val { color: var(--danger); text-decoration: line-through; font-size: 1rem; display: block; }
-        .cor-val { color: var(--success); font-weight: bold; font-size: 1.2rem; display: block; }
-    </style>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .modal { display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+    .modal-content { background:white; padding:25px; border-radius:12px; max-width:400px; text-align:center; }
+</style>
 </head>
 <body>
 
-<div class="nav-top">
-    <button class="btn-nav" style="background: var(--success);" onclick="location.reload()">🏠 Home</button>
-    <button class="btn-nav" style="background: var(--danger);" onclick="openTeacherLogin()">🔑 Teacher</button>
+<button id="home-btn" onclick="location.reload()">🏠 Home</button>
+<button id="teacher-btn" onclick="openTeacherLogin()">🔑 Teacher</button>
+
+<div id="welcome-screen">
+    <img src="BrainFitBitCapy.png" style="max-width:200px;" alt="Logo">
+    <h1>Welcome to BrainFitBit!</h1>
+    <p>Enter your name to start training.</p>
+    <input type="text" id="student-name" placeholder="Student name">
+    <br><br>
+    <button onclick="showMenu()" style="background:#4CAF50;padding:12px 40px">Next</button>
 </div>
 
-<div class="container" id="welcome-screen">
-    <img src="BrainFitBitCapy.png" style="max-width: 120px; margin-bottom: 15px;">
-    <h1>BrainFitBit</h1>
-    <input type="text" id="student-name" placeholder="Enter your name">
-    <button onclick="showMenu()">Next</button>
-</div>
-
-<div class="container" id="menu-container" style="display:none">
+<div id="menu-container" style="display:none">
     <h2 id="greeting-text"></h2>
-    <label>Method</label>
-    <select id="method">
-        <option>Simple</option>
-        <option>Small Friend</option>
-        <option>Big Friend</option>
-        <option>Mixed</option>
-        <option>All</option>
-    </select>
-    <label>Columns</label><input type="number" id="columns" value="1">
-    <label>Rows</label><input type="number" id="rows" value="5">
-    <label>Questions</label><input type="number" id="questions" value="5">
-    <button onclick="generate()" style="background: var(--success);">Start Session</button>
+    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:15px;">
+        <label><b>Method</b><br>
+        <select id="method">
+            <option value="Simple">Simple</option>
+            <option value="Small Friend">Small Friend</option>
+            <option value="Big Friend">Big Friend</option>
+            <option value="Mixed">Mixed</option>
+            <option value="All">All</option>
+        </select></label>
+        <label><b>Columns</b><br><input type="number" id="columns" value="1" style="width:60px"></label>
+        <label><b>Rows</b><br><input type="number" id="rows" value="5" style="width:60px"></label>
+        <label><b>Questions</b><br><input type="number" id="questions" value="5" style="width:60px"></label>
+    </div>
+    <br>
+    <button onclick="generate()" style="padding:15px 50px; font-size:1.3rem; background:#4CAF50;">Let's do it!</button>
 </div>
 
-<div class="container" id="table-container" style="display:none">
+<div id="table-container" style="display:none">
     <div id="quiz-area"></div>
-    <div id="final-results" style="display:none"></div>
+    <div id="results-area" style="display:none">
+        <h2 id="final-score"></h2>
+        <div id="detailed-results"></div>
+        <button onclick="location.reload()" style="background:#4CAF50; padding:15px 40px; margin-top:20px;">Try Again</button>
+    </div>
 </div>
 
-<div id="teacher-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center;">
-    <div style="background:white; padding:30px; border-radius:12px; text-align:center;">
-        <h2>Teacher Access</h2>
+<div id="teacher-modal" class="modal">
+    <div class="modal-content">
+        <h2>Teacher Login</h2>
         <input type="text" id="teacher-id" placeholder="ID"><br>
-        <input type="password" id="teacher-pass" placeholder="Password"><br>
-        <button onclick="loginTeacher()" style="background:var(--danger);">Login</button>
-        <button onclick="closeModal()" style="background:#64748b; margin-top:5px;">Cancel</button>
+        <input type="password" id="teacher-pass" placeholder="Password"><br><br>
+        <button onclick="loginTeacher()" style="background:#f44336; width:100%">Login</button>
+        <button onclick="closeModal()" style="background:#888; width:100%; margin-top:5px;">Cancel</button>
     </div>
 </div>
 
@@ -92,13 +95,12 @@ let data = [], studentName = "";
 
 function showMenu() {
     studentName = document.getElementById("student-name").value.trim();
-    if (!studentName) return alert("Enter name");
+    if (!studentName) return alert("Enter your name");
     document.getElementById("welcome-screen").style.display = "none";
     document.getElementById("menu-container").style.display = "block";
-    document.getElementById("greeting-text").innerText = "Hello, " + studentName;
+    document.getElementById("greeting-text").innerText = "Hello, " + studentName + "!";
 }
 
-// LOGICA ORIGINAL DE GERAÇÃO
 function generateFullNumber(maxCols) {
     let num = 0;
     for (let i = 0; i < maxCols; i++) {
@@ -109,11 +111,22 @@ function generateFullNumber(maxCols) {
     return num;
 }
 
+// Sua lógica original de validação Soroban
 function validMove(total, num, method, op) {
     let newTotal = op === 1 ? total + num : total - num;
     if (newTotal < 0) return false;
     if (method === "All") return true;
-    // ... simplificado para manter o foco nas funções de UI ...
+    for (let i = 0; i < 13; i++) {
+        let p = Math.pow(10, i);
+        let dTotal = Math.floor((total / p) % 10);
+        let dNum = Math.floor((num / p) % 10);
+        if (dNum === 0) continue;
+        let hasFive = dTotal >= 5, lower = dTotal % 5;
+        if (op === 1) {
+            let isSimple = (dNum <= (4-lower)) || (dNum >= 5 && !hasFive && (dNum-5 <= 4-lower));
+            if (method === "Simple" && !isSimple) return false;
+        }
+    }
     return true; 
 }
 
@@ -122,57 +135,66 @@ function generate() {
     const cols = parseInt(document.getElementById("columns").value);
     const rows = parseInt(document.getElementById("rows").value);
     const q = parseInt(document.getElementById("questions").value);
+    
     data = [];
     for (let i = 0; i < q; i++) {
         let moves = [], currentTotal = 0;
         for (let r = 0; r < rows; r++) {
             let num = generateFullNumber(cols);
             let sign = (r === 0) ? 1 : (Math.random() < 0.5 ? 1 : -1);
+            if (!validMove(currentTotal, num, method, sign)) { num = 1; sign = currentTotal > 0 ? -1 : 1; }
             moves.push(sign * num);
             currentTotal += (sign * num);
         }
-        data.push({ moves, total: currentTotal, studentAnswer: null });
+        data.push({ moves, total: currentTotal, studentAnswer: "" });
     }
     renderQuiz();
-    document.getElementById("menu-container").style.display = "none";
-    document.getElementById("table-container").style.display = "block";
 }
 
 function renderQuiz() {
+    document.getElementById("menu-container").style.display = "none";
+    document.getElementById("table-container").style.display = "block";
     const area = document.getElementById("quiz-area");
     area.innerHTML = "";
+
     data.forEach((item, index) => {
         const card = document.createElement("div");
         card.className = `equation-card ${index === 0 ? 'active' : ''}`;
-        card.id = `q-${index}`;
-        
-        let html = `<h3>Question ${index + 1} of ${data.length}</h3><table>`;
+        card.id = `card-${index}`;
+
+        let tableHtml = `<h3>Question ${index + 1} of ${data.length}</h3><table>`;
         item.moves.forEach((m, r) => {
-            html += `<tr><td>${r === 0 ? Math.abs(m) : (m < 0 ? "-" + Math.abs(m) : "+" + m)}</td></tr>`;
+            tableHtml += `<tr><td>${r === 0 ? Math.abs(m) : (m < 0 ? "-" + Math.abs(m) : "+" + m)}</td></tr>`;
         });
-        html += `</table><input type="number" id="ans-${index}" class="answer-input" placeholder="Result">`;
-        
+        tableHtml += `</table><input type="number" id="ans-${index}" class="answer-input-large" placeholder="?">`;
+
         const btn = document.createElement("button");
+        btn.style.display = "block";
+        btn.style.margin = "20px auto";
+        btn.style.padding = "15px 60px";
+
         if (index < data.length - 1) {
-            btn.innerText = "Next Question";
+            btn.innerText = "Next ➡️";
+            btn.style.background = "#2196F3";
             btn.onclick = () => {
-                let ans = document.getElementById(`ans-${index}`).value;
-                if(!ans) return alert("Please answer");
-                data[index].studentAnswer = ans;
-                document.getElementById(`q-${index}`).classList.remove('active');
-                document.getElementById(`q-${index+1}`).classList.add('active');
+                let val = document.getElementById(`ans-${index}`).value;
+                if(!val) return alert("Please answer first!");
+                data[index].studentAnswer = val;
+                document.getElementById(`card-${index}`).classList.remove('active');
+                document.getElementById(`card-${index+1}`).classList.add('active');
             };
         } else {
-            btn.innerText = "Check Answers";
-            btn.style.background = "var(--success)";
+            btn.innerText = "Check Answers! ✅";
+            btn.style.background = "#4CAF50";
             btn.onclick = () => {
-                let ans = document.getElementById(`ans-${index}`).value;
-                if(!ans) return alert("Please answer");
-                data[index].studentAnswer = ans;
+                let val = document.getElementById(`ans-${index}`).value;
+                if(!val) return alert("Please answer first!");
+                data[index].studentAnswer = val;
                 showResults();
             };
         }
-        card.innerHTML = html;
+
+        card.innerHTML = tableHtml;
         card.appendChild(btn);
         area.appendChild(card);
     });
@@ -180,34 +202,37 @@ function renderQuiz() {
 
 function showResults() {
     document.getElementById("quiz-area").style.display = "none";
-    const resDiv = document.getElementById("final-results");
-    resDiv.style.display = "block";
+    const resultsArea = document.getElementById("results-area");
+    resultsArea.style.display = "block";
+    
     let score = 0;
-    let html = `<h2>Performance Summary</h2>`;
+    let detailsHtml = "";
 
     data.forEach((item, i) => {
         const isCorrect = Number(item.studentAnswer) === item.total;
         if(isCorrect) score++;
-        html += `<div class="res-card ${isCorrect ? 'res-correct' : 'res-wrong'}">
-            <strong>Question #${i+1}</strong><br>`;
-        if(isCorrect) {
-            html += `<span>✔ ${item.studentAnswer}</span>`;
-        } else {
-            html += `<span class="err-val">Your answer: ${item.studentAnswer || 'Empty'}</span>
-                     <span style="font-size: 0.8rem; color: #64748b;">Correct:</span>
-                     <span class="cor-val">${item.total}</span>`;
-        }
-        html += `</div>`;
+
+        detailsHtml += `
+            <div class="result-item ${isCorrect ? 'res-correct' : 'res-wrong'}">
+                <b>Question #${i+1}:</b><br>
+                ${isCorrect ? 
+                    `<span class="correct-val">✔ ${item.studentAnswer} (Correct!)</span>` : 
+                    `<span class="wrong-val">✘ Your answer: ${item.studentAnswer || 'None'}</span>
+                     <span class="correct-val">Correct answer: ${item.total}</span>`
+                }
+            </div>`;
     });
-    resDiv.innerHTML = html + `<h3>Final Score: ${score}/${data.length}</h3><button onclick="location.reload()">Try Again</button>`;
+
+    document.getElementById("final-score").innerText = `Final Score: ${score} / ${data.length}`;
+    document.getElementById("detailed-results").innerHTML = detailsHtml;
 }
 
 function openTeacherLogin() { document.getElementById("teacher-modal").style.display = "flex"; }
 function closeModal() { document.getElementById("teacher-modal").style.display = "none"; }
 function loginTeacher() {
     if(document.getElementById("teacher-id").value === "FelipeMoreno" && document.getElementById("teacher-pass").value === "2906Noah") {
-        window.location.href = "teacher.html";
-    } else alert("Invalid login");
+        alert("Login Success!");
+    } else alert("Invalid Credentials");
 }
 </script>
 </body>
