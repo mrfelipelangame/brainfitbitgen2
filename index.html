@@ -6,7 +6,7 @@
 <title>BrainFitBit - Soroban Trainer</title>
 <style>
     body { font-family:"Comic Sans MS",cursive,sans-serif; max-width:950px; margin:auto; padding:20px; background:#a0daf3; color:#2c3e50; }
-    #welcome-screen,#menu-container,#table-container { text-align:center; background:rgba(255,255,255,0.95); padding:30px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.1); margin-top:20px; }
+    #welcome-screen,#menu-container,#table-container,#teacher-dashboard { text-align:center; background:rgba(255,255,255,0.95); padding:30px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.1); margin-top:20px; }
     
     input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; }
@@ -28,13 +28,19 @@
     .result-card { background: white; padding: 15px; margin: 10px auto; border-radius: 10px; border: 2px solid #ccc; max-width: 550px; text-align: left; }
     .res-correct { border-left: 8px solid #4CAF50; background: #f0fff0; }
     .res-wrong { border-left: 8px solid #f44336; background: #fff5f5; }
+
+    #home-btn { position:fixed; top:20px; left:20px; background:#4CAF50; z-index:1000; }
+    #teacher-login-btn { position:fixed; top:20px; right:20px; background:#f44336; z-index:1000; }
 </style>
 </head>
 <body>
 
+<button id="home-btn" onclick="location.reload()">🏠 Home</button>
+<button id="teacher-login-btn" onclick="openTeacherLogin()">🔑 Teacher</button>
+
 <div id="welcome-screen">
     <img src="BrainFitBitCapy.png" style="max-width:180px;">
-    <h1>Welcome to BrainFitBit!</h1>
+    <h1>Welcome!</h1>
     <input type="text" id="student-name" placeholder="Student name">
     <br><br>
     <button onclick="showMenu()" style="background:#4CAF50;padding:12px 40px">Next</button>
@@ -86,6 +92,16 @@
     </div>
 </div>
 
+<div id="teacher-dashboard" style="display:none">
+    <h1>Teacher Dashboard</h1>
+    <p>Welcome, Teacher Felipe.</p>
+    <hr>
+    <div id="teacher-content">
+        <p>Student session logs and settings will appear here.</p>
+        <button onclick="location.reload()" style="background:#666">Exit Dashboard</button>
+    </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 let data = [], studentName = "", timerInterval = null, currentTime = 0, isTimer = false;
@@ -103,6 +119,7 @@ function showMenu() {
     document.getElementById("greeting-text").innerText = "Hello, " + studentName + "!";
 }
 
+// SOROBAN ENGINE (UNALTERED)
 function getMoveDetails(total, num, op) {
     let newTotal = op === 1 ? total + num : total - num;
     let res = { possible: newTotal >= 0, isSimple: true, isSmall: false, isBig: false };
@@ -168,7 +185,6 @@ function startQuiz() {
     document.getElementById("table-container").style.display = "block";
     renderCards();
     qStartTime = Date.now();
-    
     updateTimeDisplay();
     timerInterval = setInterval(() => {
         if (isTimer) {
@@ -202,7 +218,6 @@ function renderCards() {
             let now = Date.now();
             data[index].timeTaken = Math.round((now - qStartTime) / 1000);
             qStartTime = now;
-
             data[index].studentAnswer = document.getElementById(`ans-${index}`).value;
             if (index < data.length - 1) {
                 document.getElementById(`q-${index}`).classList.remove('active');
@@ -239,7 +254,6 @@ function savePDF() {
     doc.text(`BrainFitBit Report - ${studentName}`, 20, 20);
     doc.setFont("helvetica", "normal");
     doc.text(`Total Session Time: ${document.getElementById("time-display").innerText}`, 20, 30);
-    
     let y = 45;
     data.forEach((item, i) => {
         let isCorrect = Number(item.studentAnswer) === item.total;
@@ -248,8 +262,21 @@ function savePDF() {
         y += 10;
         if(y > 270) { doc.addPage(); y = 20; }
     });
-    
     doc.save(`Results_${studentName}.pdf`);
+}
+
+// LOGIN TEACHER REDIRECT
+function openTeacherLogin() {
+    let id = prompt("Teacher ID:");
+    let pass = prompt("Password:");
+    if(id === "FelipeMoreno" && pass === "2906Noah") {
+        document.getElementById("welcome-screen").style.display = "none";
+        document.getElementById("menu-container").style.display = "none";
+        document.getElementById("table-container").style.display = "none";
+        document.getElementById("teacher-dashboard").style.display = "block";
+    } else {
+        alert("Invalid ID or Password.");
+    }
 }
 </script>
 </body>
