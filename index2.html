@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainFitBit - Login</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #a0daf3; /* Cor temática que você usou antes */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .auth-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 100%;
+            max-width: 350px;
+        }
+        img.logo { max-width: 180px; margin-bottom: 20px; }
+        h1 { color: var(--primary); margin-bottom: 20px; font-size: 1.5rem; }
+        
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+        }
+        
+        .btn-login { 
+            width: 100%; 
+            padding: 12px; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        .btn-login:hover { opacity: 0.9; }
+
+        .toggle-link {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        .toggle-link a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <img src="BrainFitBitCapy.png" class="logo" alt="Logo">
+        
+        <div id="login-box">
+            <h1>Student Login</h1>
+            <input type="email" id="login-email" placeholder="Email Address">
+            <input type="password" id="login-pass" placeholder="Password">
+            <button class="btn-login" onclick="handleLogin()">Sign In</button>
+            <div class="toggle-link">
+                New student? <a href="#" onclick="toggleAuth(false)">Create Account</a>
+            </div>
+        </div>
+
+        <div id="register-box" class="hidden">
+            <h1>Create Account</h1>
+            <input type="text" id="reg-name" placeholder="Full Name">
+            <input type="email" id="reg-email" placeholder="Email Address">
+            <input type="password" id="reg-pass" placeholder="Create Password">
+            <button class="btn-login" style="background: var(--success);" onclick="handleRegister()">Register</button>
+            <div class="toggle-link">
+                Already have an account? <a href="#" onclick="toggleAuth(true)">Login here</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+        // SUA CONFIGURAÇÃO DO FIREBASE (Mantenha as chaves que você já tem)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCs3BEHkjR9RTjGel5sIia-0figudjpwHo",
+            authDomain: "brainfitbit.firebaseapp.com",
+            projectId: "brainfitbit",
+            storageBucket: "brainfitbit.firebasestorage.app",
+            messagingSenderId: "410750019324",
+            appId: "1:410750019324:web:4ca76123542732dad31979"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Funções Globais para os Botões
+        window.toggleAuth = (isLogin) => {
+            document.getElementById('login-box').classList.toggle('hidden', !isLogin);
+            document.getElementById('register-box').classList.toggle('hidden', isLogin);
+        };
+
+        window.handleLogin = async () => {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                // O redirecionamento acontece no onAuthStateChanged abaixo
+            } catch (e) {
+                alert("Login Error: " + e.message);
+            }
+        };
+
+        window.handleRegister = async () => {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+            try {
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                // Salva o nome no banco de dados para o Dashboard ler depois
+                await setDoc(doc(db, "users", res.user.uid), {
+                    displayName: name,
+                    email: email,
+                    createdAt: new Date()
+                });
+                alert("Account created successfully!");
+            } catch (e) {
+                alert("Register Error: " + e.message);
+            }
+        };
+
+        // Redirecionamento Automático
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Se o usuário logar, envia para o dashboard
+                window.location.href = "studentdashboard.html";
+            }
+        });
+    </script>
+</body>
+</html>
