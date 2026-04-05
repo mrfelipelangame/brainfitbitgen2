@@ -1,181 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BrainFitBit - Teacher Panel</title>
-<style>
-body{font-family:"Comic Sans MS",cursive,sans-serif; max-width:950px;margin:auto;padding:20px;background:#a0daf3;color:#2c3e50;}
-input,select,button{padding:6px;margin:5px;font-size:1rem;}
-button{cursor:pointer;background:#2196F3;color:white;border:none;border-radius:6px;font-weight:bold;}
-button:hover{background:#1976D2;}
-table{border-collapse:collapse;margin:auto;background:white;border-radius:6px;}
-td{border:1px solid #555;text-align:center;font-size:16px;padding:5px;}
-.correct{background:#9df29d;border:2px solid green;}
-.wrong{background:#ea9e9e;border:2px solid red;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainFitBit - Teacher Admin</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: #1e293b; line-height: 1.6; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        h1 { color: var(--primary); text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        h2 { font-size: 1.25rem; margin-top: 30px; color: #475569; display: flex; align-items: center; gap: 10px; }
+        
+        /* Layout Grid */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
+        
+        /* Form Elements */
+        label { display: block; font-weight: 600; margin: 10px 0 5px; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; margin-top: 15px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        .btn-alt { background: #64748b; }
+        
+        /* Analysis Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        td { border: 1px solid #e2e8f0; text-align: center; padding: 8px; }
+        .correct { background: #dcfce7; color: #166534; font-weight: bold; border: 2px solid #10b981; }
+        .wrong { background: #fee2e2; color: #991b1b; font-weight: bold; border: 2px solid #ef4444; }
+        
+        hr { border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+        #generated-link { background: #f1f5f9; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 11px; word-break: break-all; margin-top: 10px; display: none; border: 1px dashed #cbd5e1; }
+    </style>
 </head>
 <body>
-<h1>BrainFitBit - Teacher Panel</h1>
 
-<h2>1️⃣ Register Student</h2>
-<label>Name:</label><input type="text" id="new-student-name"><br>
-<label>Email:</label><input type="email" id="new-student-email"><br>
-<button onclick="registerStudent()">Register Student</button>
-<p id="register-msg" style="color:green;"></p>
+<div class="container">
+    <h1>BrainFitBit Teacher Dashboard</h1>
 
-<hr>
+    <div class="grid">
+        <section class="card">
+            <h2>👤 Register Student</h2>
+            <label>Full Name</label>
+            <input type="text" id="new-student-name" placeholder="Ex: Maria Silva">
+            <label>Email Address</label>
+            <input type="email" id="new-student-email" placeholder="maria@email.com">
+            <button onclick="registerStudent()">Add Student</button>
+            <p id="register-msg" style="color:var(--success); font-size: 0.8rem; margin-top: 5px;"></p>
+        </section>
 
-<h2>2️⃣ Generate Homework </h2>
-<label>Student:</label>
-<select id="teacher-student-select"></select><br>
-<label>Method:</label>
-<select id="teacher-method">
-<option>Simple</option>
-<option>Small Friend</option>
-<option>Big Friend</option>
-<option>Mixed</option>
-<option>All</option>
-</select><br>
-<label>Columns:</label><input type="number" id="teacher-cols" value="3"><br>
-<label>Rows:</label><input type="number" id="teacher-rows" value="5"><br>
-<label>Questions:</label><input type="number" id="teacher-questions" value="5"><br>
-<button onclick="generateHomeworkLink()">Generate Link</button>
-<button onclick="sendHomework()">Send Homework via Email</button>
-<p id="generated-link"></p>
-<p id="email-msg" style="color:green;"></p>
+        <section class="card">
+            <h2>⚙️ Homework Config</h2>
+            <label>Select Student</label>
+            <select id="teacher-student-select"></select>
+            
+            <label>Difficulty Method</label>
+            <select id="teacher-method">
+                <option>Simple</option>
+                <option>Small Friend</option>
+                <option>Big Friend</option>
+                <option>Mixed</option>
+                <option>All</option>
+            </select>
 
-<hr>
+            <div style="display: flex; gap: 10px;">
+                <div><label>Cols</label><input type="number" id="teacher-cols" value="3"></div>
+                <div><label>Rows</label><input type="number" id="teacher-rows" value="5"></div>
+                <div><label>Qty</label><input type="number" id="teacher-questions" value="5"></div>
+            </div>
+        </section>
+    </div>
 
-<h2>3️⃣ Load Student Answers </h2>
-<input type="file" id="json-file" accept=".json">
-<button onclick="loadStudentAnswers()">Load Answers</button>
-<div id="answers-container"></div>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="generateHomeworkLink()">🔗 Generate & Copy Link</button>
+        <button onclick="sendHomework()" style="background: var(--success);">📧 Send via EmailJS</button>
+    </div>
+    <div id="generated-link"></div>
+    <p id="email-msg" style="text-align: center; color: var(--success); font-weight: bold;"></p>
+
+    <hr>
+
+    <h2>📊 Review Student Submissions</h2>
+    <div class="card">
+        <label>Upload the JSON result file:</label>
+        <input type="file" id="json-file" accept=".json">
+        <button class="btn-alt" onclick="loadStudentAnswers()">Analyze Results</button>
+    </div>
+    <div id="answers-container" style="margin-top: 20px;"></div>
+</div>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-<script type="text/javascript">
-   (function(){
-      emailjs.init('MukrMYpsZqIkdIG0s'); // sua Public Key
-   })();
-</script>
-
 <script>
-// ====== STUDENTS STORAGE ======
-function saveStudent(name,email){
-  let students = JSON.parse(localStorage.getItem("students")||"[]");
-  if(name && email && !students.find(s=>s.email===email)){
-    students.push({name,email});
-    localStorage.setItem("students",JSON.stringify(students));
-  }
-}
-function loadStudents(){
-  let students = JSON.parse(localStorage.getItem("students")||"[]");
-  let select = document.getElementById("teacher-student-select");
-  select.innerHTML="<option value=''>Select Student</option>";
-  students.forEach(s=>{
-    let opt=document.createElement("option");
-    opt.value=s.email;
-    opt.text=s.name+" ("+s.email+")";
-    select.appendChild(opt);
-  });
-}
-loadStudents();
+    // INITIALIZE EMAILJS
+    (function(){ emailjs.init('MukrMYpsZqIkdIG0s'); })();
 
-// ====== REGISTER STUDENT ======
-function registerStudent(){
-  let name=document.getElementById("new-student-name").value.trim();
-  let email=document.getElementById("new-student-email").value.trim();
-  if(!name || !email){ alert("Fill name and email!"); return; }
-  saveStudent(name,email);
-  loadStudents();
-  document.getElementById("register-msg").innerText="Student registered successfully!";
-  document.getElementById("new-student-name").value="";
-  document.getElementById("new-student-email").value="";
-}
-
-// ====== GENERATE HOMEWORK LINK ======
-function generateHomeworkLink(){
-  let select=document.getElementById("teacher-student-select");
-  if(!select.value){ alert("Select a student"); return; }
-  let studentName=select.options[select.selectedIndex].text.split(" (")[0];
-  let method=document.getElementById("teacher-method").value;
-  let cols=Math.max(1,parseInt(document.getElementById("teacher-cols").value)||3);
-  let rows=Math.max(1,parseInt(document.getElementById("teacher-rows").value)||5);
-  let q=Math.max(1,parseInt(document.getElementById("teacher-questions").value)||5);
-
-  let url=`student.html?student=${encodeURIComponent(studentName)}&method=${method}&cols=${cols}&rows=${rows}&q=${q}`;
-  document.getElementById("generated-link").innerText=url;
-  prompt("Copy the link for the student:",url);
-}
-
-// ====== SEND HOMEWORK EMAIL ======
-function sendHomework(){
-  let select=document.getElementById("teacher-student-select");
-  if(!select.value){ alert("Select a student"); return; }
-  
-  let studentName = select.options[select.selectedIndex].text.split(" (")[0];
-  let studentEmail = select.value;
-  
-  let method=document.getElementById("teacher-method").value;
-  let cols=Math.max(1,parseInt(document.getElementById("teacher-cols").value)||3);
-  let rows=Math.max(1,parseInt(document.getElementById("teacher-rows").value)||5);
-  let q=Math.max(1,parseInt(document.getElementById("teacher-questions").value)||5);
-
-  let homeworkLink = `${window.location.origin}/student.html?student=${encodeURIComponent(studentName)}&method=${method}&cols=${cols}&rows=${rows}&q=${q}`;
-   
-  emailjs.send('service_qs2cyzt','template_u09c9if',{
-    student_name: studentName,
-    homework_link: homeworkLink,
-    to_email: studentEmail
-  })
-  .then(function(response){
-    document.getElementById("email-msg").innerText="Homework sent successfully!";
-  }, function(error){
-    alert("Failed to send email. Check EmailJS configuration.");
-  });
-}
-
-// ====== LOAD STUDENT ANSWERS ======
-function loadStudentAnswers(){
-  const fileInput=document.getElementById("json-file");
-  if(fileInput.files.length===0){ alert("Choose a JSON file"); return; }
-  const reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      const data=JSON.parse(e.target.result);
-      showAnswers(data);
-    }catch(err){
-      alert("Invalid JSON file!");
+    // STUDENT DATABASE MANAGEMENT
+    function loadStudents() {
+        const students = JSON.parse(localStorage.getItem("students") || "[]");
+        const select = document.getElementById("teacher-student-select");
+        select.innerHTML = "<option value=''>-- Select Student --</option>";
+        students.forEach(s => {
+            const opt = document.createElement("option");
+            opt.value = s.email;
+            opt.text = `${s.name} (${s.email})`;
+            select.appendChild(opt);
+        });
     }
-  };
-  reader.readAsText(fileInput.files[0]);
-}
 
-function showAnswers(data){
-  const container=document.getElementById("answers-container");
-  container.innerHTML="";
-  data.forEach((item,i)=>{
-    let div=document.createElement("div");
-    let score=0;
-    let html="<table>";
-    item.moves.forEach(row=>{
-      html+="<tr>";
-      row.forEach(cell=>html+="<td>"+cell+"</td>");
-      html+="</tr>";
-    });
-    html+="<tr>";
-    let len=Math.min(item.moves.length,item.studentAnswers.length);
-    for(let k=0;k<len;k++){
-      let val=item.studentAnswers[k];
-      let cls=val===item.total?"correct":"wrong";
-      if(val===item.total) score++;
-      html+="<td class='"+cls+"'>"+val+"</td>";
+    function registerStudent() {
+        const name = document.getElementById("new-student-name").value.trim();
+        const email = document.getElementById("new-student-email").value.trim();
+        
+        if (!name || !email) { alert("Error: Name and Email are required."); return; }
+        
+        let students = JSON.parse(localStorage.getItem("students") || "[]");
+        if (students.find(s => s.email === email)) { alert("Error: Student email already registered."); return; }
+        
+        students.push({name, email});
+        localStorage.setItem("students", JSON.stringify(students));
+        loadStudents();
+        
+        document.getElementById("register-msg").innerText = "✔ Student registered successfully!";
+        setTimeout(() => document.getElementById("register-msg").innerText = "", 3000);
+        document.getElementById("new-student-name").value = "";
+        document.getElementById("new-student-email").value = "";
     }
-    html+="</tr></table>";
-    div.innerHTML=`<b>Q${i+1} - Score: ${score} / ${len}</b><br>`+html+"<hr>";
-    container.appendChild(div);
-  });
-}
+
+    // PARAMETER CAPTURE
+    function getTaskParams() {
+        const select = document.getElementById("teacher-student-select");
+        if (!select.value) return null;
+
+        return {
+            name: select.options[select.selectedIndex].text.split(" (")[0],
+            email: select.value,
+            method: document.getElementById("teacher-method").value,
+            cols: Math.max(1, parseInt(document.getElementById("teacher-cols").value) || 1),
+            rows: Math.max(1, parseInt(document.getElementById("teacher-rows").value) || 1),
+            q: Math.max(1, parseInt(document.getElementById("teacher-questions").value) || 1)
+        };
+    }
+
+    // LINK GENERATION
+    function generateHomeworkLink() {
+        const data = getTaskParams();
+        if (!data) { alert("Please select a student from the list."); return; }
+
+        const baseUrl = window.location.origin + window.location.pathname.replace('teacher.html', 'student.html');
+        const url = `${baseUrl}?student=${encodeURIComponent(data.name)}&method=${encodeURIComponent(data.method)}&cols=${data.cols}&rows=${data.rows}&q=${data.q}`;
+        
+        const linkBox = document.getElementById("generated-link");
+        linkBox.innerText = url;
+        linkBox.style.display = "block";
+        
+        navigator.clipboard.writeText(url).then(() => {
+            alert("Success: Link generated and copied to clipboard!");
+        });
+    }
+
+    // EMAIL SENDING
+    function sendHomework() {
+        const data = getTaskParams();
+        if (!data) { alert("Please select a student."); return; }
+
+        const baseUrl = window.location.origin + window.location.pathname.replace('teacher.html', 'student.html');
+        const homeworkLink = `${baseUrl}?student=${encodeURIComponent(data.name)}&method=${encodeURIComponent(data.method)}&cols=${data.cols}&rows=${data.rows}&q=${data.q}`;
+        
+        emailjs.send('service_qs2cyzt', 'template_u09c9if', {
+            student_name: data.name,
+            homework_link: homeworkLink,
+            to_email: data.email
+        }).then(() => {
+            document.getElementById("email-msg").innerText = "📧 Homework sent successfully!";
+            setTimeout(() => document.getElementById("email-msg").innerText = "", 4000);
+        }, (err) => {
+            alert("EmailJS Error: " + JSON.stringify(err));
+        });
+    }
+
+    // RESULTS LOADING
+    function loadStudentAnswers() {
+        const fileInput = document.getElementById("json-file");
+        if (fileInput.files.length === 0) { alert("Please select a valid .json file."); return; }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                renderResults(data);
+            } catch (err) { alert("Error parsing JSON file."); }
+        };
+        reader.readAsText(fileInput.files[0]);
+    }
+
+    function renderResults(data) {
+        const container = document.getElementById("answers-container");
+        container.innerHTML = "";
+        
+        data.forEach((item, index) => {
+            let correctAnswers = 0;
+            let tableContent = "<table>";
+            
+            // Generate question rows
+            item.moves.forEach(row => {
+                tableContent += "<tr>" + row.map(val => `<td>${val}</td>`).join("") + "</tr>";
+            });
+
+            // Generate answer row comparison
+            tableContent += "<tr>";
+            item.studentAnswers.forEach(ans => {
+                const isCorrect = (ans == item.total);
+                if (isCorrect) correctAnswers++;
+                tableContent += `<td class="${isCorrect ? 'correct' : 'wrong'}">${ans || 'N/A'}</td>`;
+            });
+            tableContent += "</tr></table>";
+
+            const resultCard = document.createElement("div");
+            resultCard.className = "card";
+            resultCard.style.marginBottom = "20px";
+            resultCard.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong>Question #${index + 1}</strong>
+                    <span style="background:#e2e8f0; padding:2px 8px; border-radius:12px; font-size:0.8rem;">
+                        Score: ${correctAnswers} / ${item.studentAnswers.length}
+                    </span>
+                </div>
+                ${tableContent}
+                <div style="font-size:0.8rem; margin-top:5px; color:#64748b;">Target Sum: ${item.total}</div>
+            `;
+            container.appendChild(resultCard);
+        });
+    }
+
+    // ON LOAD
+    window.onload = loadStudents;
 </script>
 </body>
 </html>
