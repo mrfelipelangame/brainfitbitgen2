@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrainFitBit - Soroban Student</title>
+<style>
+body{font-family:"Comic Sans MS",cursive,sans-serif; max-width:950px;margin:auto;padding:20px;background:#a0daf3;color:#2c3e50;}
+#welcome-screen,#table-container{text-align:center;background:rgba(255,255,255,0.95);padding:30px;border-radius:15px;box-shadow:0 10px 25px rgba(0,0,0,0.1);margin-top:20px;}
+h1{color:#1a73e8;}
+input,select,button{padding:10px;margin:5px;border-radius:8px;border:1px solid #ccc;font-size:1rem;}
+button{cursor:pointer;background:#2196F3;color:white;border:none;font-weight:bold;transition:transform .2s;}
+button:hover{transform:scale(1.05);background:#1976D2;}
+#table-wrapper{overflow-x:auto;margin:20px 0;padding:10px;}
+table{border-collapse:collapse;margin:auto;background:white;border-radius:8px;}
+td{border:1px solid #ddd;padding:12px;text-align:center;font-size:26px;min-width:85px;font-weight:bold;}
+.correct{background:#9df29d!important;border:2px solid green;}
+.wrong{background:#ea9e9e!important;border:2px solid red;}
+.answer-input{width:75px;text-align:center;font-size:1.2rem;font-weight:bold;outline:none;}
+</style>
+</head>
+<body>
+
+<div id="table-container">
+<h2 id="table-title"></h2>
+<div id="table-wrapper"><div id="table"></div></div>
+<div id="result-text" style="font-size:1.5rem;font-weight:bold;margin:15px"></div>
+<div id="restart-container"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+let data=[];
+
+// ====== URL PARAMS ======
+function getUrlParams(){
+  let params={};
+  window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,(m,key,value)=>{params[key]=decodeURIComponent(value);});
+  return params;
+}
+
+const params=getUrlParams();
+const studentName=params.student||"Student";
+const method=params.method||"Simple";
+const cols=parseInt(params.cols)||3;
+const rows=parseInt(params.rows)||5;
+const questions=parseInt(params.q)||5;
+
+// ====== GENERATE NUMBERS ======
+function generateNumber(maxColumns){
+  let column = Math.floor(Math.random() * maxColumns);
+  let digit = Math.floor(Math.random() * 9) + 1;
+  return digit * Math.pow(10, column);
+}
+
+// ====== VALIDATE METHOD ======
+function validMove(total,num,method,op){
+  if(num===0) return false;
+  let newTotal = op===1 ? total+num : total-num;
+  if(newTotal<0) return false;
+  
+  let column=Math.floor(Math.log10(num));
+  let place=Math.pow(10,column);
+  let digit=Math.floor(num/place);
+  let tDigit=Math.floor(total/place)%10;
+
+  if(method==="Simple"){
+    if(op===1){ return (tDigit+digit<=9)&&((tDigit%5)+digit<=4); }
+    else{ return (tDigit-digit>=0); }
+  }
+  if(method==="Small Friend"){
+    if(op===1){ return ((tDigit%5)+digit>4)&&(tDigit+digit<=9); }
+    else{ return (tDigit%5)<digit%5; }
+  }
+  if(method==="Big Friend"){
+    if(op===1){ return (tDigit+digit>9); }
+    else{ return (tDigit<digit); }
+  }
+  if(method==="Mixed"){ return true; }
+  return true;
+}
+
+// ====== GENERATE DATA ======
+function generateData(){
+  data=[];
+  for(let i=0;i<questions;i++){
+    let moves=[], total=0;
+    for(let r=0;r<rows;r++){
+      let num, sign, tries=0, valid=false;
+      while(!valid && tries<200){
+        num=generateNumber(cols);
+        sign=r===0?1:(Math.random()<0.5?1:-1);
+        valid=validMove(total,num,method,sign);
+        tries++;
+      }
+      if(!valid){ num=1; sign=1; }
+      total+=sign*num;
+      moves.push(sign*num);
+    }
+    data.push({moves:moves,total:total});
+  }
+}
+
+// ====== RENDER TABLE ======
+function renderTable(){
+  let html="<table>";
+  for(let r=0;r<rows;r++){
+    html+="<tr>";
+    for(let i=0;i<questions;i++){
+      let v=data[i].moves[r];
+      let display = r===0? Math.abs(v) : (v<0?"-"+Math.abs(v):"+"+v);
+      html+="<td>"+display+"</td>";
+    }
+    html+="</tr>";
+  }
+  html+="<tr>";
+  for(let i=0;i<questions;i++){
+    html+="<td><input type='number' id='a"+i+"' class='answer-input' placeholder='?'></td>";
+  }
+  html+="</tr></table>";
+  html+="<br><button id='check-btn' onclick='checkAnswers()'>Check Answers</button>";
+  document.getElementById("table").innerHTML=html;
+  document.getElementById("table-title").innerText="Good luck "+studentName+"!";
+}
+
+// ====== CHECK ANSWERS ======
+function checkAnswers(){
+  let correct=0;
+  data.forEach((item,i)=>{
+    let input=document.getElementById("a"+i);
+    let val=Number(input.value);
+    input.disabled=true;
+    if(val===item.total){ input.classList.add("correct"); correct++; }
+    else{ input.classList.add("wrong"); }
+    item.studentAnswer=val; // salvar para JSON
+  });
+  document.getElementById("result-text").innerText="Score: "+correct+" / "+questions;
+  document.getElementById("check-btn").remove();
+  document.getElementById("restart-container").innerHTML=
+    "<button onclick='savePDF()'>Save PDF</button> <button onclick='saveJSON()'>Save JSON</button>";
+}
+
+// ====== SAVE PDF ======
+function savePDF(){
+  const { jsPDF }=window.jspdf;
+  let doc=new jsPDF();
+  doc.setFontSize(14);
+  doc.text("Student: "+studentName,15,15);
+  let y=25;
+  data.forEach((item,i)=>{
+    doc.text("Q"+(i+1)+": "+item.moves.join(" "),15,y);
+    y+=10;
+    doc.setTextColor(item.studentAnswer===item.total?0,150,0:200,0,0);
+    doc.text("Answer: "+item.studentAnswer+" (Correct: "+item.total+")",15,y);
+    y+=10;
+  });
+  doc.save("BrainFitBit_Homework.pdf");
+}
+
+// ====== SAVE JSON ======
+function saveJSON(){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const link=document.createElement("a");
+  link.href=URL.createObjectURL(blob);
+  link.download="BrainFitBit_Homework.json";
+  link.click();
+}
+
+// ====== INIT ======
+generateData();
+renderTable();
+</script>
+</body>
+</html>
