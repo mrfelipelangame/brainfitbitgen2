@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainFitBit - Student Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --primary: #1a73e8; --secondary: #34a853; --bg: #f4f7f6; --sidebar: #202124; }
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); display: flex; min-height: 100vh; }
+        
+        /* AUTH SCREEN */
+        #auth-container { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #a0daf3; height: 100vh; position: fixed; z-index: 2000; }
+        .auth-box { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; width: 320px; }
+        .auth-box input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        
+        /* SIDEBAR */
+        #sidebar { width: 250px; background: var(--sidebar); color: white; position: fixed; height: 100%; display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
+        .logo-area { padding: 30px; text-align: center; border-bottom: 1px solid #3c4043; }
+        .nav-item { color: #bdc1c6; text-decoration: none; padding: 15px 25px; display: block; cursor: pointer; transition: 0.2s; font-size: 16px; }
+        .nav-item:hover, .nav-item.active { background: #3c4043; color: white; border-left: 4px solid var(--primary); }
+        
+        /* MAIN CONTENT */
+        #main-wrapper { flex: 1; margin-left: 250px; display: flex; flex-direction: column; width: calc(100% - 250px); }
+        header { background: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        main { padding: 40px; flex: 1; }
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; }
+        
+        /* SOROBAN TABLE */
+        table { border-collapse: collapse; margin: 20px auto; background: white; }
+        td { border: 1px solid #ddd; text-align: center; font-size: 22px; padding: 12px; min-width: 60px; font-weight: bold; }
+        .answer-input { width: 80px; text-align: center; font-size: 18px; border: 2px solid #ccc; border-radius: 4px; }
+        .correct { background: #d4edda; color: #155724; }
+        .wrong { background: #f8d7da; color: #721c24; }
+        
+        /* UTILS */
+        .hidden { display: none !important; }
+        button { cursor: pointer; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-container">
+        <div class="auth-box">
+            <img src="BrainFitBitCapy.png" style="width: 120px; margin-bottom: 20px;">
+            <h2 id="auth-title">Login</h2>
+            <div id="login-fields">
+                <input type="email" id="email" placeholder="Email">
+                <input type="password" id="password" placeholder="Password">
+                <button class="btn-primary" onclick="login()" style="width: 100%;">Login</button>
+                <p style="font-size: 14px;">New student? <a href="#" onclick="toggleAuth(false)">Create account</a></p>
+            </div>
+            <div id="register-fields" class="hidden">
+                <input type="text" id="reg-name" placeholder="Full Name">
+                <input type="email" id="reg-email" placeholder="Email">
+                <input type="password" id="reg-pass" placeholder="Password">
+                <button class="btn-primary" onclick="register()" style="width: 100%; background: var(--secondary);">Register</button>
+                <p style="font-size: 14px;">Already have account? <a href="#" onclick="toggleAuth(true)">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <nav id="sidebar" class="hidden">
+        <div class="logo-area">
+            <img src="BrainFitBitCapy.png" style="width: 70px; background: white; border-radius: 50%; padding: 5px;">
+            <h3 style="margin-top:10px;">BrainFitBit</h3>
+        </div>
+        <div class="nav-item active" onclick="showPage('home')">🏠 Home</div>
+        <div class="nav-item" onclick="showPage('homework')">📚 Homework</div>
+        <div class="nav-item" onclick="showPage('free')">⚡ Free Lessons</div>
+        <div class="nav-item" onclick="showPage('evolution')">📈 Evolution</div>
+        <div class="nav-item" onclick="showPage('games')">🎮 Games</div>
+        <div class="nav-item" onclick="showPage('info')">ℹ️ Information</div>
+        <div class="nav-item" onclick="showPage('my-info')">👤 My Information</div>
+        <button onclick="logout()" style="margin: auto 20px 20px; background: #ea4335; color: white;">Logout</button>
+    </nav>
+
+    <div id="main-wrapper" class="hidden">
+        <header>
+            <h2 id="welcome-msg">Welcome, Student!</h2>
+            <div id="header-date"></div>
+        </header>
+
+        <main>
+            <section id="page-home" class="page-section">
+                <h1>Welcome to your Dashboard</h1>
+                <div class="card">
+                    <h3>Keep up the good work!</h3>
+                    <p>Select a lesson from the menu to start training your brain.</p>
+                </div>
+            </section>
+
+            <section id="page-free" class="page-section hidden">
+                <h1>Free Practice</h1>
+                <div class="card">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <select id="method">
+                            <option value="Simple">Simple</option>
+                            <option value="Small Friend">Small Friend</option>
+                            <option value="Big Friend">Big Friend</option>
+                            <option value="Mixed">Mixed</option>
+                        </select>
+                        <input type="number" id="cols" value="1" title="Columns" style="width:50px">
+                        <input type="number" id="rows" value="5" title="Rows" style="width:50px">
+                        <input type="number" id="qs" value="5" title="Questions" style="width:50px">
+                        <button class="btn-primary" onclick="generatePractice()">Start Practice</button>
+                    </div>
+                </div>
+                <div id="practice-area" class="card hidden">
+                    <div id="table-container"></div>
+                    <div id="result-display" style="font-size: 20px; font-weight: bold; margin-top: 15px;"></div>
+                </div>
+            </section>
+
+            <section id="page-evolution" class="page-section hidden">
+                <h1>Evolution Tracker</h1>
+                <div class="card">
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+            </section>
+
+            <section id="page-games" class="page-section hidden">
+                <h1>Brain Games</h1>
+                <div class="card" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                    <a href="https://www.mathplayground.com" target="_blank" class="card" style="text-align: center; text-decoration: none; color: black;">Math Playground</a>
+                    <a href="https://www.abcya.com" target="_blank" class="card" style="text-align: center; text-decoration: none; color: black;">ABCya Games</a>
+                </div>
+            </section>
+
+            <section id="page-my-info" class="page-section hidden">
+                <h1>Account Settings</h1>
+                <div class="card">
+                    <div id="user-details"></div>
+                    <hr>
+                    <button class="btn-primary" onclick="resetPassword()" style="background:#666">Reset Password via Email</button>
+                </div>
+            </section>
+
+            <section id="page-homework" class="page-section hidden"><h1>Homework</h1><div class="card">No pending homework.</div></section>
+            <section id="page-info" class="page-section hidden"><h1>Information</h1><div class="card">BrainFitBit Rules & Guidelines.</div></section>
+
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCs3BEHkjR9RTjGel5sIia-0figudjpwHo",
+            authDomain: "brainfitbit.firebaseapp.com",
+            projectId: "brainfitbit",
+            storageBucket: "brainfitbit.firebasestorage.app",
+            messagingSenderId: "410750019324",
+            appId: "1:410750019324:web:4ca76123542732dad31979"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUserData = null;
+        let practiceData = [];
+
+        // --- NAVIGATION ---
+        window.toggleAuth = (isLogin) => {
+            document.getElementById('login-fields').classList.toggle('hidden', !isLogin);
+            document.getElementById('register-fields').classList.toggle('hidden', isLogin);
+            document.getElementById('auth-title').innerText = isLogin ? 'Login' : 'Create Account';
+        };
+
+        window.showPage = (pageId) => {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.remove('hidden');
+            event.target.classList.add('active');
+        };
+
+        // --- AUTH LOGIC ---
+        window.register = async () => {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+            try {
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                await setDoc(doc(db, "users", res.user.uid), {
+                    displayName: name, email: email, createdAt: new Date()
+                });
+            } catch (e) { alert(e.message); }
+        };
+
+        window.login = async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert(e.message); }
+        };
+
+        window.logout = () => signOut(auth);
+
+        window.resetPassword = () => {
+            sendPasswordResetEmail(auth, auth.currentUser.email).then(() => alert("Reset email sent!"));
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                currentUserData = snap.data();
+                document.getElementById('auth-container').classList.add('hidden');
+                document.getElementById('sidebar').classList.remove('hidden');
+                document.getElementById('main-wrapper').classList.remove('hidden');
+                document.getElementById('welcome-msg').innerText = `Hi, ${currentUserData.displayName.split(' ')[0]}! 👋`;
+                document.getElementById('header-date').innerText = new Date().toDateString();
+                renderUserDetails();
+                initChart();
+            } else {
+                document.getElementById('auth-container').classList.remove('hidden');
+                document.getElementById('sidebar').classList.add('hidden');
+                document.getElementById('main-wrapper').classList.add('hidden');
+            }
+        });
+
+        function renderUserDetails() {
+            document.getElementById('user-details').innerHTML = `
+                <p><b>Name:</b> ${currentUserData.displayName}</p>
+                <p><b>Email:</b> ${currentUserData.email}</p>
+                <p><b>Joined:</b> ${currentUserData.createdAt.toDate().toLocaleDateString()}</p>
+            `;
+        }
+
+        // --- SOROBAN LOGIC ---
+        window.generatePractice = () => {
+            const m = document.getElementById('method').value;
+            const c = parseInt(document.getElementById('cols').value);
+            const r = parseInt(document.getElementById('rows').value);
+            const q = parseInt(document.getElementById('qs').value);
+            
+            practiceData = [];
+            for (let i = 0; i < q; i++) {
+                let moves = [], total = 0;
+                for (let j = 0; j < r; j++) {
+                    let num = Math.floor(Math.random() * Math.pow(10, c));
+                    let sign = (j === 0 || total < num) ? 1 : (Math.random() > 0.5 ? 1 : -1);
+                    moves.push(sign * num);
+                    total += sign * num;
+                }
+                practiceData.push({ moves, total });
+            }
+            renderPracticeTable(r, q);
+        };
+
+        function renderPracticeTable(rows, questions) {
+            let html = "<table>";
+            for (let r = 0; r < rows; r++) {
+                html += "<tr>";
+                for (let q = 0; q < questions; q++) {
+                    let v = practiceData[q].moves[r];
+                    html += `<td>${r === 0 ? Math.abs(v) : (v < 0 ? v : '+'+v)}</td>`;
+                }
+                html += "</tr>";
+            }
+            html += "<tr>";
+            for (let q = 0; q < questions; q++) {
+                html += `<td><input type="number" id="ans${q}" class="answer-input"></td>`;
+            }
+            html += "</tr></table>";
+            html += `<button class="btn-primary" onclick="checkPractice()">Check Answers</button>`;
+            document.getElementById('table-container').innerHTML = html;
+            document.getElementById('practice-area').classList.remove('hidden');
+            document.getElementById('result-display').innerText = "";
+        }
+
+        window.checkPractice = () => {
+            let score = 0;
+            practiceData.forEach((d, i) => {
+                const input = document.getElementById(`ans${i}`);
+                if (parseInt(input.value) === d.total) {
+                    input.className = "answer-input correct";
+                    score++;
+                } else {
+                    input.className = "answer-input wrong";
+                }
+            });
+            document.getElementById('result-display').innerText = `Score: ${score} / ${practiceData.length}`;
+        };
+
+        // --- CHART ---
+        function initChart() {
+            const ctx = document.getElementById('evolutionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Accuracy %',
+                        data: [60, 75, 70, 90],
+                        borderColor: '#1a73e8',
+                        tension: 0.3
+                    }]
+                }
+            });
+        }
+    </script>
+</body>
+</html>
