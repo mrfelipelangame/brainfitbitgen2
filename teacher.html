@@ -16,18 +16,15 @@
         h1 { color: var(--primary); text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
         h2 { font-size: 1.25rem; margin-top: 30px; color: #475569; display: flex; align-items: center; gap: 10px; }
         
-        /* Layout Grid */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card { padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
         
-        /* Form Elements */
         label { display: block; font-weight: 600; margin: 10px 0 5px; font-size: 0.9rem; }
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; margin-top: 15px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         .btn-alt { background: #64748b; }
         
-        /* Analysis Tables */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
         td { border: 1px solid #e2e8f0; text-align: center; padding: 8px; }
         .correct { background: #dcfce7; color: #166534; font-weight: bold; border: 2px solid #10b981; }
@@ -94,6 +91,7 @@
 </div>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
 <script>
     // INITIALIZE EMAILJS
     (function(){ emailjs.init('MukrMYpsZqIkdIG0s'); })();
@@ -145,12 +143,20 @@
         };
     }
 
-    // LINK GENERATION
+    // --- CORREÇÃO PARA GITHUB PAGES ---
+    // Esta função agora descobre a pasta correta dinamicamente
+    function getStudentBaseUrl() {
+        const currentUrl = window.location.href;
+        // Remove o "teacher.html" e parâmetros da URL, sobrando apenas o caminho da pasta/repositório
+        const folderPath = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+        return `${folderPath}/student.html`;
+    }
+
     function generateHomeworkLink() {
         const data = getTaskParams();
         if (!data) { alert("Please select a student from the list."); return; }
 
-        const baseUrl = window.location.origin + window.location.pathname.replace('teacher.html', 'student.html');
+        const baseUrl = getStudentBaseUrl();
         const url = `${baseUrl}?student=${encodeURIComponent(data.name)}&method=${encodeURIComponent(data.method)}&cols=${data.cols}&rows=${data.rows}&q=${data.q}`;
         
         const linkBox = document.getElementById("generated-link");
@@ -158,16 +164,15 @@
         linkBox.style.display = "block";
         
         navigator.clipboard.writeText(url).then(() => {
-            alert("Success: Link generated and copied to clipboard!");
+            alert("Success: Link generated for GitHub and copied!");
         });
     }
 
-    // EMAIL SENDING
     function sendHomework() {
         const data = getTaskParams();
         if (!data) { alert("Please select a student."); return; }
 
-        const baseUrl = window.location.origin + window.location.pathname.replace('teacher.html', 'student.html');
+        const baseUrl = getStudentBaseUrl();
         const homeworkLink = `${baseUrl}?student=${encodeURIComponent(data.name)}&method=${encodeURIComponent(data.method)}&cols=${data.cols}&rows=${data.rows}&q=${data.q}`;
         
         emailjs.send('service_qs2cyzt', 'template_u09c9if', {
@@ -181,8 +186,8 @@
             alert("EmailJS Error: " + JSON.stringify(err));
         });
     }
+    // --- FIM DA CORREÇÃO ---
 
-    // RESULTS LOADING
     function loadStudentAnswers() {
         const fileInput = document.getElementById("json-file");
         if (fileInput.files.length === 0) { alert("Please select a valid .json file."); return; }
@@ -205,12 +210,10 @@
             let correctAnswers = 0;
             let tableContent = "<table>";
             
-            // Generate question rows
             item.moves.forEach(row => {
                 tableContent += "<tr>" + row.map(val => `<td>${val}</td>`).join("") + "</tr>";
             });
 
-            // Generate answer row comparison
             tableContent += "<tr>";
             item.studentAnswers.forEach(ans => {
                 const isCorrect = (ans == item.total);
@@ -236,7 +239,6 @@
         });
     }
 
-    // ON LOAD
     window.onload = loadStudents;
 </script>
 </body>
