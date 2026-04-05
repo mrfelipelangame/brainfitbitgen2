@@ -10,10 +10,36 @@
             --success: #10b981;
             --danger: #ef4444;
             --bg: #f8fafc;
+            --text: #1e293b;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: #1e293b; line-height: 1.6; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; margin: 0; padding: 20px; }
+        
+        /* Estilo para os botões de navegação superiores */
+        .nav-header {
+            max-width: 900px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .btn-home {
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-home:hover { opacity: 0.9; }
+
         .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        h1 { color: var(--primary); text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        h1 { color: var(--primary); text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 10px; }
         h2 { font-size: 1.25rem; margin-top: 30px; color: #475569; display: flex; align-items: center; gap: 10px; }
         
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -21,6 +47,7 @@
         
         label { display: block; font-weight: 600; margin: 10px 0 5px; font-size: 0.9rem; }
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        
         button { width: 100%; padding: 12px; margin-top: 15px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         .btn-alt { background: #64748b; }
@@ -35,6 +62,10 @@
     </style>
 </head>
 <body>
+
+<div class="nav-header">
+    <button class="btn-home" onclick="window.location.href='index.html'">🏠 Home</button>
+</div>
 
 <div class="container">
     <h1>BrainFitBit Teacher Dashboard</h1>
@@ -55,7 +86,7 @@
             <label>Select Student</label>
             <select id="teacher-student-select"></select>
             
-            <label>Difficulty Method</label>
+            <label>Method</label>
             <select id="teacher-method">
                 <option>Simple</option>
                 <option>Small Friend</option>
@@ -83,7 +114,7 @@
 
     <h2>📊 Review Student Submissions</h2>
     <div class="card">
-        <label>Upload the JSON result file:</label>
+        <label>Upload the result file:</label>
         <input type="file" id="json-file" accept=".json">
         <button class="btn-alt" onclick="loadStudentAnswers()">Analyze Results</button>
     </div>
@@ -128,7 +159,6 @@
         document.getElementById("new-student-email").value = "";
     }
 
-    // PARAMETER CAPTURE
     function getTaskParams() {
         const select = document.getElementById("teacher-student-select");
         if (!select.value) return null;
@@ -143,11 +173,8 @@
         };
     }
 
-    // --- CORREÇÃO PARA GITHUB PAGES ---
-    // Esta função agora descobre a pasta correta dinamicamente
     function getStudentBaseUrl() {
         const currentUrl = window.location.href;
-        // Remove o "teacher.html" e parâmetros da URL, sobrando apenas o caminho da pasta/repositório
         const folderPath = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
         return `${folderPath}/student.html`;
     }
@@ -186,7 +213,6 @@
             alert("EmailJS Error: " + JSON.stringify(err));
         });
     }
-    // --- FIM DA CORREÇÃO ---
 
     function loadStudentAnswers() {
         const fileInput = document.getElementById("json-file");
