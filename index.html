@@ -136,7 +136,7 @@
         }
 
         .text-center { text-align: center; }
-        img.logo { max-width: 120px; display: block; margin: 0 auto 10px; }
+        img.logo { max-width: 280px; display: block; margin: 0 auto 10px; }
     </style>
 </head>
 <body>
@@ -149,9 +149,9 @@
     <div class="container">
         <div id="welcome-screen">
             <img src="BrainFitBitCapy.png" class="logo" alt="Logo">
-            <h1>Welcome to BrainFitBit</h1>
+            <h1>Welcome!</h1>
             <div class="card" style="max-width: 400px; margin: 20px auto;">
-                <label>Student Name</label>
+                <label>Insert Your Name to Start Training</label>
                 <input type="text" id="student-name" placeholder="Type here...">
                 <button class="btn-main" onclick="showMenu()">Next</button>
             </div>
@@ -188,9 +188,9 @@
                 </div>
 
                 <div class="card">
-                    <label>Columns (Digits)</label>
+                    <label>Columns </label>
                     <input type="number" id="columns" value="1" min="1">
-                    <label>Rows (Numbers)</label>
+                    <label>Rows </label>
                     <input type="number" id="rows" value="5" min="1">
                     <label>Questions</label>
                     <input type="number" id="questions" value="5" min="1">
@@ -209,7 +209,7 @@
                 <div id="detailed-results"></div>
                 <div class="grid" style="margin-top: 20px;">
                     <button class="btn-main" style="background: #ff9800;" onclick="savePDF()">Save PDF</button>
-                    <button class="btn-main" onclick="location.reload()">Restart</button>
+                    <button class="btn-main" onclick="restartQuiz()">Restart</button>
                 </div>
             </div>
         </div>
@@ -389,6 +389,33 @@
             } else {
                 alert("Invalid ID or Password.");
             }
+        }
+      // ... (mantenha todo o seu código anterior até chegar na função restartQuiz)
+
+        function restartQuiz() {
+            // AJUSTE: Limpa o intervalo do cronômetro para não acumular processos
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            // 1. Esconde a tela de resultados e o container de exercícios
+            document.getElementById("results-screen").style.display = "none";
+            document.getElementById("table-container").style.display = "none";
+            
+            // 2. Mostra o menu de seleção de equações/métodos
+            document.getElementById("menu-container").style.display = "block";
+            
+            // 3. Reseta a área de quiz para a próxima geração
+            document.getElementById("quiz-area").style.display = "block";
+            document.getElementById("quiz-area").innerHTML = "";
+            
+            // 4. Reseta o visual do cronômetro na tela
+            document.getElementById("time-pill").innerText = "00:00";
+            
+            // 5. Limpa variáveis de controle
+            currentTime = 0;
+            data = [];
         }
     </script>
 </body>
