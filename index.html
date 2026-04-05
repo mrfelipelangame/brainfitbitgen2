@@ -5,45 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrainFitBit - Soroban Trainer</title>
 <style>
-    /* ESTÉTICA ORIGINAL */
     body { font-family:"Comic Sans MS",cursive,sans-serif; max-width:950px; margin:auto; padding:20px; background:#a0daf3; color:#2c3e50; }
     #welcome-screen,#menu-container,#table-container { text-align:center; background:rgba(255,255,255,0.95); padding:30px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.1); margin-top:20px; }
-    h1 { color:#1a73e8; margin-bottom:10px; }
     
-    /* REMOVER SETAS DOS INPUTS */
     input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; }
+    select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: none; cursor: pointer; text-align: center; border: 1px solid #ccc; }
 
-    input, select, button { padding:10px; margin:5px; border-radius:8px; border:1px solid #ccc; font-size:1rem; }
+    input, select, button { padding:12px; margin:5px; border-radius:8px; border:1px solid #ccc; font-size:1rem; min-width: 80px; }
     button { cursor:pointer; background:#2196F3; color:white; border:none; font-weight:bold; transition:transform .2s; }
     button:hover { transform:scale(1.05); background:#1976D2; }
 
-    /* LAYOUT DA TABELA (CONFORME IMAGEM) */
+    table { border-collapse: collapse; margin: 20px auto; background: white; width: 250px; }
+    td { border: 2px solid #333; text-align: center; font-size: 45px; font-weight: bold; padding: 15px; color: #2c3e50; }
+    
     .equation-card { display: none; }
     .equation-card.active { display: block; }
-    table { border-collapse: collapse; margin: 20px auto; background: white; width: 250px; }
-    td { border: 1px solid #333; text-align: center; font-size: 45px; font-weight: bold; padding: 15px; color: #2c3e50; }
-    
     .answer-input-large { width: 100%; max-width: 230px; text-align: center; font-size: 35px; font-weight: bold; border-radius: 12px; border: 4px solid #6395ed; margin: 15px 0; color: #6395ed; outline: none; }
     
-    /* RESULTADOS E PDF */
+    #time-display { font-size: 2.2rem; font-weight: bold; color: #f44336; margin-bottom: 15px; background: #fff; display: inline-block; padding: 5px 20px; border-radius: 50px; border: 3px solid #f44336; }
+
     .result-card { background: white; padding: 15px; margin: 10px auto; border-radius: 10px; border: 2px solid #ccc; max-width: 550px; text-align: left; }
     .res-correct { border-left: 8px solid #4CAF50; background: #f0fff0; }
     .res-wrong { border-left: 8px solid #f44336; background: #fff5f5; }
-    .wrong-val { color: #f44336; text-decoration: line-through; margin-right: 10px; }
-    .correct-val { color: #4CAF50; font-weight: bold; }
-
-    #home-btn { position:fixed; top:20px; left:20px; background:#4CAF50; z-index:1000; }
-    #teacher-btn { position:fixed; top:20px; right:20px; background:#f44336; z-index:1000; }
 </style>
 </head>
 <body>
 
-<button id="home-btn" onclick="location.reload()">🏠 Home</button>
-<button id="teacher-btn" onclick="openTeacherLogin()">🔑 Teacher</button>
-
 <div id="welcome-screen">
-    <img src="BrainFitBitCapy.png" style="max-width:180px;" alt="Logo">
+    <img src="BrainFitBitCapy.png" style="max-width:180px;">
     <h1>Welcome to BrainFitBit!</h1>
     <input type="text" id="student-name" placeholder="Student name">
     <br><br>
@@ -61,266 +51,205 @@
             <option value="Mixed">Mixed</option>
             <option value="All">All</option>
         </select></label>
-        <label><b>Columns</b><br><input type="number" id="columns" value="1" style="width:60px"></label>
-        <label><b>Rows</b><br><input type="number" id="rows" value="5" style="width:60px"></label>
-        <label><b>Questions</b><br><input type="number" id="questions" value="5" style="width:60px"></label>
+        
+        <label><b>Mode</b><br>
+        <select id="time-mode" onchange="toggleTimeChoices()">
+            <option value="stopwatch">Stopwatch (Count Up)</option>
+            <option value="timer">Timer (Count Down)</option>
+        </select></label>
+
+        <label id="limit-label" style="display:none"><b>Limit</b><br>
+        <select id="timer-choice">
+            <option value="30">30s</option>
+            <option value="60">1 min</option>
+            <option value="120">2 min</option>
+            <option value="300">5 min</option>
+        </select></label>
+
+        <label><b>Columns</b><br><input type="number" id="columns" value="1"></label>
+        <label><b>Rows</b><br><input type="number" id="rows" value="5"></label>
+        <label><b>Questions</b><br><input type="number" id="questions" value="5"></label>
     </div>
     <br>
     <button onclick="generate()" style="padding:15px 50px; font-size:1.3rem; background:#4CAF50;">Let's do it!</button>
 </div>
 
 <div id="table-container" style="display:none">
+    <div id="time-display">00:00</div>
     <div id="quiz-area"></div>
     <div id="results-screen" style="display:none">
         <h2 id="final-score"></h2>
+        <p id="total-time-spent" style="font-size:1.2rem; font-weight:bold;"></p>
         <div id="detailed-results"></div>
-        <div style="margin-top:20px;">
-            <button onclick="savePDF()" style="background:#ff9800; padding:12px 30px;">Save Results (PDF)</button>
-            <button onclick="restartToMenu()" style="background:#4CAF50; padding:12px 30px;">Restart</button>
-        </div>
+        <button onclick="savePDF()" style="background:#ff9800; padding:12px 30px;">Save Results (PDF)</button>
+        <button onclick="location.reload()" style="background:#4CAF50; padding:12px 30px;">Restart</button>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-let data = [], studentName = "";
+let data = [], studentName = "", timerInterval = null, currentTime = 0, isTimer = false;
+let qStartTime = 0;
+
+function toggleTimeChoices() {
+    document.getElementById("limit-label").style.display = (document.getElementById("time-mode").value === "timer") ? "block" : "none";
+}
 
 function showMenu() {
     studentName = document.getElementById("student-name").value.trim();
-    if (!studentName) return alert("Please enter your name");
+    if (!studentName) return alert("Enter name");
     document.getElementById("welcome-screen").style.display = "none";
     document.getElementById("menu-container").style.display = "block";
     document.getElementById("greeting-text").innerText = "Hello, " + studentName + "!";
 }
 
-// MOTOR DE GERAÇÃO ORIGINAL (SOROBAN RULES)
-function validMove(total, num, method, op) {
+function getMoveDetails(total, num, op) {
     let newTotal = op === 1 ? total + num : total - num;
-    if (newTotal < 0) return false;
-    if (method === "All") return true;
-
-    for (let i = 0; i < 13; i++) {
-        let p = Math.pow(10, i);
-        let dTotal = Math.floor((total / p) % 10);
-        let dNum = Math.floor((num / p) % 10);
-        if (dNum === 0) continue;
-
-        let hasFive = dTotal >= 5;
-        let lowerBeads = dTotal % 5;
-
-        if (op === 1) { // --- SOMA ---
-            // Movimento Direto (sem fórmulas)
-            let isSimple = (dNum <= (4 - lowerBeads)) || (dNum >= 5 && !hasFive && (dNum - 5 <= 4 - lowerBeads));
-            // Amigo de 5 (usa a conta de cima, ex: 4+1)
-            let isSmall = (dNum < 5) && (dNum > (4 - lowerBeads)) && !hasFive;
-            // Amigo de 10 (passa para a próxima coluna, ex: 9+1 ou 6+4)
-            let isBig = (dTotal + dNum >= 10);
-
-            if (method === "Simple") {
-                if (!isSimple || isBig) return false;
-            } 
-            else if (method === "Small Friend") {
-                // Permite simples e pequenos amigos, mas PROÍBE passar de 10
-                if (isBig || (!isSimple && !isSmall)) return false;
-            } 
-            else if (method === "Big Friend") {
-                // Permite simples e grandes amigos
-                if (!isSimple && !isBig) return false;
-            }
-            else if (method === "Mixed") {
-                // Permite tudo (Combinação de 5 e 10)
-                return true;
-            }
-        } else { // --- SUBTRAÇÃO ---
-            let isSimpleSub = (dNum <= lowerBeads) || (dNum >= 5 && hasFive && (dNum - 5 <= lowerBeads));
-            let isSmallSub = (dNum < 5) && (dNum > lowerBeads) && hasFive;
-            let isBigSub = (dTotal < dNum);
-
-            if (method === "Simple") {
-                if (!isSimpleSub || isBigSub) return false;
-            } 
-            else if (method === "Small Friend") {
-                if (isBigSub || (!isSimpleSub && !isSmallSub)) return false;
-            }
-            else if (method === "Big Friend") {
-                if (!isSimpleSub && !isBigSub) return false;
-            }
+    let res = { possible: newTotal >= 0, isSimple: true, isSmall: false, isBig: false };
+    if (!res.possible) return res;
+    let sT = total.toString().split('').reverse(), sN = num.toString().split('').reverse();
+    for (let i = 0; i < Math.max(sT.length, sN.length); i++) {
+        let dT = parseInt(sT[i] || 0), dN = parseInt(sN[i] || 0);
+        if (dN === 0) continue;
+        let has5 = dT >= 5, low = dT % 5;
+        if (op === 1) {
+            if (!((dN <= (4-low)) || (dN >= 5 && !has5 && (dN-5 <= 4-low)))) res.isSimple = false;
+            if (dN < 5 && dN > (4-low) && !has5) res.isSmall = true;
+            if (dT + dN >= 10) res.isBig = true;
+        } else {
+            if (!((dN <= low) || (dN >= 5 && has5 && (dN-5 <= low)))) res.isSimple = false;
+            if (dN < 5 && dN > low && has5) res.isSmall = true;
+            if (dT < dN) res.isBig = true;
         }
     }
-    return true;
+    return res;
 }
+
 function generate() {
     const method = document.getElementById("method").value;
     const cols = parseInt(document.getElementById("columns").value);
     const rows = parseInt(document.getElementById("rows").value);
     const q = parseInt(document.getElementById("questions").value);
+    isTimer = (document.getElementById("time-mode").value === "timer");
+    currentTime = isTimer ? parseInt(document.getElementById("timer-choice").value) : 0;
+
     data = [];
-    
     for (let i = 0; i < q; i++) {
         let moves = [], currentTotal = 0;
         for (let r = 0; r < rows; r++) {
             let num, sign, valid = false, tries = 0;
-            while(!valid && tries < 1500) {
+            while(!valid && tries < 2000) {
                 num = 0;
-                for(let c=0; c<cols; c++) {
-                    let d = Math.floor(Math.random()*10);
-                    if(c === cols-1 && cols > 1 && d === 0) d = 1;
-                    num += d * Math.pow(10, c);
-                }
+                for(let c=0; c<cols; c++) num += Math.floor(Math.random()*10) * Math.pow(10, c);
                 if (num === 0) num = 1;
                 sign = (r === 0) ? 1 : (Math.random() < 0.5 ? 1 : -1);
-                valid = validMove(currentTotal, num, method, sign);
+                let info = getMoveDetails(currentTotal, num, sign);
+                if (info.possible) {
+                    if (method === "Simple") valid = info.isSimple && !info.isBig;
+                    else if (method === "Small Friend") {
+                        if (info.isBig) valid = false;
+                        else valid = tries < 1500 ? info.isSmall : (info.isSimple || info.isSmall);
+                    }
+                    else if (method === "Big Friend") valid = tries < 1500 ? info.isBig : true;
+                    else valid = true;
+                }
                 tries++;
             }
             moves.push(sign * num);
             currentTotal += (sign * num);
         }
-        data.push({ moves, total: currentTotal, studentAnswer: "" });
+        data.push({ moves, total: currentTotal, studentAnswer: "", timeTaken: 0 });
     }
-    renderQuiz();
+    startQuiz();
 }
 
-function renderQuiz() {
+function startQuiz() {
     document.getElementById("menu-container").style.display = "none";
-    document.getElementById("results-screen").style.display = "none";
     document.getElementById("table-container").style.display = "block";
-    const area = document.getElementById("quiz-area");
-    area.style.display = "block";
-    area.innerHTML = "";
+    renderCards();
+    qStartTime = Date.now();
+    
+    updateTimeDisplay();
+    timerInterval = setInterval(() => {
+        if (isTimer) {
+            currentTime--;
+            if (currentTime <= 0) { clearInterval(timerInterval); showFinalResults(); }
+        } else { currentTime++; }
+        updateTimeDisplay();
+    }, 1000);
+}
 
+function updateTimeDisplay() {
+    let t = Math.abs(currentTime);
+    let m = Math.floor(t / 60), s = t % 60;
+    document.getElementById("time-display").innerText = `${m}:${s < 10 ? '0'+s : s}`;
+}
+
+function renderCards() {
+    const area = document.getElementById("quiz-area");
+    area.innerHTML = "";
     data.forEach((item, index) => {
         const card = document.createElement("div");
         card.className = `equation-card ${index === 0 ? 'active' : ''}`;
         card.id = `q-${index}`;
-        
-        let html = `<h2 style="color:#1a73e8">Question ${index + 1} of ${data.length}</h2><table>`;
-        item.moves.forEach((m, r) => {
-            html += `<tr><td>${r === 0 ? Math.abs(m) : (m < 0 ? "-" + Math.abs(m) : "+" + m)}</td></tr>`;
-        });
+        let html = `<h2>Question ${index+1}/${data.length}</h2><table>`;
+        item.moves.forEach((m, r) => html += `<tr><td>${r===0?Math.abs(m):(m<0?"-"+Math.abs(m):"+"+m)}</td></tr>`);
         html += `</table><input type="number" id="ans-${index}" class="answer-input-large" placeholder="?">`;
-        
         const btn = document.createElement("button");
-        btn.style.width = "250px"; btn.style.padding = "15px"; btn.style.fontSize = "1.2rem";
-        
-        if (index < data.length - 1) {
-            btn.innerText = "Next Question ➡️";
-            btn.onclick = () => {
-                let inputVal = document.getElementById(`ans-${index}`).value;
-                if(inputVal === "") return alert("Please enter an answer");
-                data[index].studentAnswer = inputVal;
+        btn.style.width = "250px";
+        btn.innerText = index < data.length - 1 ? "Next ➡️" : "Finish ✅";
+        btn.onclick = () => {
+            let now = Date.now();
+            data[index].timeTaken = Math.round((now - qStartTime) / 1000);
+            qStartTime = now;
+
+            data[index].studentAnswer = document.getElementById(`ans-${index}`).value;
+            if (index < data.length - 1) {
                 document.getElementById(`q-${index}`).classList.remove('active');
                 document.getElementById(`q-${index+1}`).classList.add('active');
-            };
-        } else {
-            btn.innerText = "Check Answers ✅";
-            btn.style.background = "#4CAF50";
-            btn.onclick = () => {
-                let inputVal = document.getElementById(`ans-${index}`).value;
-                if(inputVal === "") return alert("Please enter an answer");
-                data[index].studentAnswer = inputVal;
+            } else {
+                clearInterval(timerInterval);
                 showFinalResults();
-            };
-        }
-        card.innerHTML = html;
-        card.appendChild(btn);
-        area.appendChild(card);
+            }
+        };
+        card.innerHTML = html; card.appendChild(btn); area.appendChild(card);
     });
 }
 
 function showFinalResults() {
     document.getElementById("quiz-area").style.display = "none";
     document.getElementById("results-screen").style.display = "block";
-    let score = 0;
-    let html = "";
+    let score = 0, html = "";
     data.forEach((item, i) => {
         const isCorrect = Number(item.studentAnswer) === item.total;
         if(isCorrect) score++;
-        html += `<div class="result-card ${isCorrect ? 'res-correct' : 'res-wrong'}">
-            <b>Question ${i+1}:</b><br>
-            ${isCorrect ? 
-                `<span>✔ Correct! Answer: <b>${item.total}</b></span>` : 
-                `<span>✘ Wrong. Your answer: <span class="wrong-val">${item.studentAnswer || 'Empty'}</span> Correct: <span class="correct-val">${item.total}</span></span>`
-            }
+        html += `<div class="result-card ${isCorrect?'res-correct':'res-wrong'}">
+            <b>Q${i+1}:</b> ${isCorrect?'✔':'✘'} | Result: ${item.total} (Yours: ${item.studentAnswer||'--'}) | ⏱️ ${item.timeTaken}s
         </div>`;
     });
-    document.getElementById("final-score").innerText = `Results for ${studentName}: ${score} / ${data.length}`;
+    document.getElementById("final-score").innerText = `Score: ${score}/${data.length}`;
+    document.getElementById("total-time-spent").innerText = `Total Session Time: ${document.getElementById("time-display").innerText}`;
     document.getElementById("detailed-results").innerHTML = html;
-}
-
-function restartToMenu() {
-    document.getElementById("table-container").style.display = "none";
-    document.getElementById("results-screen").style.display = "none";
-    document.getElementById("menu-container").style.display = "block";
 }
 
 function savePDF() {
     const { jsPDF } = window.jspdf;
     let doc = new jsPDF();
-    let y = 20;
-
-    // Cabeçalho estilizado
-    doc.setFont("courier", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(26, 115, 232); // Azul do título
-    doc.text("BrainFitBit - Training Report", 105, y, { align: "center" });
+    doc.setFont("helvetica", "bold");
+    doc.text(`BrainFitBit Report - ${studentName}`, 20, 20);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Total Session Time: ${document.getElementById("time-display").innerText}`, 20, 30);
     
-    y += 15;
-    doc.setFontSize(14);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Student: ${studentName}`, 20, y);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, y);
-    
-    y += 10;
-    doc.setLineWidth(0.5);
-    doc.line(20, y, 190, y); // Linha divisória
-    
-    y += 15;
-    let score = 0;
-
+    let y = 45;
     data.forEach((item, i) => {
-        const isCorrect = Number(item.studentAnswer) === item.total;
-        if(isCorrect) score++;
-
-        // Quadrado de fundo para cada questão (cinza claro)
-        doc.setFillColor(248, 250, 252);
-        doc.rect(20, y - 5, 170, 15, 'F');
-
-        // Texto da Questão
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Question ${i + 1}:`, 25, y);
-
-        if (isCorrect) {
-            doc.setTextColor(16, 185, 129); // Verde Sucesso
-            doc.text(`✔ Correct! Answer: ${item.total}`, 60, y);
-        } else {
-            doc.setTextColor(239, 68, 68); // Vermelho Erro
-            doc.text(`✘ Wrong. Your: ${item.studentAnswer || 'Empty'} | Correct: ${item.total}`, 60, y);
-        }
-
-        y += 15;
-
-        // Adicionar nova página se o conteúdo for muito longo
-        if (y > 270) {
-            doc.addPage();
-            y = 20;
-        }
+        let isCorrect = Number(item.studentAnswer) === item.total;
+        doc.setTextColor(isCorrect ? 0 : 200, isCorrect ? 150 : 0, 0);
+        doc.text(`Question ${i+1}: ${isCorrect?'CORRECT':'WRONG'} | Correct: ${item.total} | Yours: ${item.studentAnswer} | Time: ${item.timeTaken}s`, 20, y);
+        y += 10;
+        if(y > 270) { doc.addPage(); y = 20; }
     });
-
-    // Rodapé com Score Final
-    y += 10;
-    doc.setFontSize(16);
-    doc.setTextColor(26, 115, 232);
-    doc.text(`Final Score: ${score} / ${data.length}`, 105, y + 10, { align: "center" });
-
-    doc.save(`Results_${studentName}_BrainFitBit.pdf`);
-}
-
-function openTeacherLogin() {
-    let id = prompt("Teacher ID:");
-    let pass = prompt("Password:");
-    if(id === "FelipeMoreno" && pass === "2906Noah") alert("Login Success!");
-    else alert("Invalid Credentials");
+    
+    doc.save(`Results_${studentName}.pdf`);
 }
 </script>
 </body>
