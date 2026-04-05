@@ -3,50 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BrainFitBit - Teacher Dashboard</title>
+    <title>BrainFitBit - Soroban Trainer</title>
     <style>
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
         body { 
-            font-family: "Comic Sans MS", cursive, sans-serif; 
-            background: #a0daf3; 
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            line-height: 1.6; 
+            margin: 0; 
+            padding: 20px; 
         }
-        /* Botões flutuantes no topo como na sua captura */
-        .nav-buttons { position: fixed; top: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
-        .nav-btn { padding: 10px 20px; border-radius: 8px; color: white; font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 5px; }
         
-        .dashboard-card {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 800px;
+        .nav-header {
+            max-width: 900px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            justify-content: space-between;
         }
-        h1 { color: #2c3e50; font-size: 2.5rem; margin-bottom: 10px; }
-        hr { border: 0; border-top: 1px solid #ccc; margin: 20px 0; }
-        .btn-exit { background: #666; color: white; padding: 12px 35px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
+
+        .btn-nav {
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-home { background: var(--success); }
+        .btn-teacher { background: var(--danger); }
+        .btn-nav:hover { opacity: 0.9; }
+
+        .container { 
+            max-width: 900px; 
+            margin: auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+        }
+
+        h1 { 
+            color: var(--primary); 
+            text-align: center; 
+            border-bottom: 2px solid #e2e8f0; 
+            padding-bottom: 10px; 
+            margin-top: 10px; 
+        }
+
+        h2 { 
+            font-size: 1.25rem; 
+            margin-top: 30px; 
+            color: #475569; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            justify-content: center;
+        }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
+        
+        label { display: block; font-weight: 600; margin: 10px 0 5px; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        .btn-main { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 15px; 
+            cursor: pointer; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            transition: opacity 0.2s; 
+            font-size: 1rem;
+        }
+        .btn-main:hover { opacity: 0.9; }
+
+        .soroban-table { 
+            width: 200px; 
+            margin: 20px auto; 
+            border-collapse: collapse; 
+            font-size: 2.5rem; 
+            font-weight: bold;
+        }
+        .soroban-table td { border: 2px solid #1e293b; padding: 10px; text-align: center; }
+        
+        .equation-card { display: none; text-align: center; }
+        .equation-card.active { display: block; }
+        .ans-input { 
+            font-size: 2rem; 
+            width: 200px; 
+            text-align: center; 
+            border: 3px solid var(--primary); 
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .result-item { 
+            padding: 10px; 
+            border-radius: 6px; 
+            margin-bottom: 10px; 
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        .correct { background: #dcfce7; color: #166534; font-weight: bold; border-left: 5px solid var(--success); }
+        .wrong { background: #fee2e2; color: #991b1b; font-weight: bold; border-left: 5px solid var(--danger); }
+
+        #time-pill {
+            display: inline-block;
+            background: #f1f5f9;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: var(--danger);
+            border: 1px solid #cbd5e1;
+            margin-bottom: 10px;
+        }
+
+        .text-center { text-align: center; }
+        img.logo { max-width: 120px; display: block; margin: 0 auto 10px; }
     </style>
 </head>
 <body>
 
-    <div class="nav-buttons">
-        <a href="index.html" style="background: #5cb85c;" class="nav-btn">🏠 Home</a>
-        <a href="#" style="background: #d9534f;" class="nav-btn">🔑 Teacher</a>
+    <div class="nav-header">
+        <button class="btn-nav btn-home" onclick="location.reload()">🏠 Home</button>
+        <button class="btn-nav btn-teacher" onclick="openTeacherLogin()">🔑 Teacher</button>
     </div>
 
-    <div class="dashboard-card">
-        <h1>Teacher Dashboard</h1>
-        <p>Welcome, Teacher Felipe.</p>
-        <hr>
-        <p>Student session logs and settings will appear here.</p>
-        <br>
-        <button class="btn-exit" onclick="window.location.href='index.html'">Exit Dashboard</button>
+    <div class="container">
+        <div id="welcome-screen">
+            <img src="BrainFitBitCapy.png" class="logo" alt="Logo">
+            <h1>Welcome to BrainFitBit</h1>
+            <div class="card" style="max-width: 400px; margin: 20px auto;">
+                <label>Student Name</label>
+                <input type="text" id="student-name" placeholder="Type here...">
+                <button class="btn-main" onclick="showMenu()">Next</button>
+            </div>
+        </div>
+
+        <div id="menu-container" style="display:none">
+            <h2 id="greeting-text"></h2>
+            <div class="grid">
+                <div class="card">
+                    <label>Method</label>
+                    <select id="method">
+                        <option value="Simple">Simple</option>
+                        <option value="Small Friend">Small Friend</option>
+                        <option value="Big Friend">Big Friend</option>
+                        <option value="Mixed">Mixed</option>
+                        <option value="All">All</option>
+                    </select>
+
+                    <label>Mode</label>
+                    <select id="time-mode" onchange="toggleTimeChoices()">
+                        <option value="stopwatch">Stopwatch</option>
+                        <option value="timer">Timer</option>
+                    </select>
+
+                    <div id="limit-label" style="display:none">
+                        <label>Time Limit</label>
+                        <select id="timer-choice">
+                            <option value="30">30s</option>
+                            <option value="60">1 min</option>
+                            <option value="120">2 min</option>
+                            <option value="300">5 min</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <label>Columns (Digits)</label>
+                    <input type="number" id="columns" value="1" min="1">
+                    <label>Rows (Numbers)</label>
+                    <input type="number" id="rows" value="5" min="1">
+                    <label>Questions</label>
+                    <input type="number" id="questions" value="5" min="1">
+                </div>
+            </div>
+            <button class="btn-main" style="background: var(--success);" onclick="generate()">Start Training</button>
+        </div>
+
+        <div id="table-container" style="display:none" class="text-center">
+            <div id="time-pill">00:00</div>
+            <div id="quiz-area"></div>
+            
+            <div id="results-screen" style="display:none">
+                <h2 id="final-score"></h2>
+                <p id="total-time-spent" style="font-weight:bold;"></p>
+                <div id="detailed-results"></div>
+                <div class="grid" style="margin-top: 20px;">
+                    <button class="btn-main" style="background: #ff9800;" onclick="savePDF()">Save PDF</button>
+                    <button class="btn-main" onclick="location.reload()">Restart</button>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        let data = [], studentName = "", timerInterval = null, currentTime = 0, isTimer = false, qStartTime = 0;
+
+        function toggleTimeChoices() {
+            document.getElementById("limit-label").style.display = (document.getElementById("time-mode").value === "timer") ? "block" : "none";
+        }
+
+        function showMenu() {
+            studentName = document.getElementById("student-name").value.trim();
+            if (!studentName) return alert("Enter student name");
+            document.getElementById("welcome-screen").style.display = "none";
+            document.getElementById("menu-container").style.display = "block";
+            document.getElementById("greeting-text").innerText = "Hello, " + studentName;
+        }
+
+        function getMoveDetails(total, num, op) {
+            let newTotal = op === 1 ? total + num : total - num;
+            let res = { possible: newTotal >= 0, isSimple: true, isSmall: false, isBig: false };
+            if (!res.possible) return res;
+            let sT = total.toString().split('').reverse(), sN = num.toString().split('').reverse();
+            for (let i = 0; i < Math.max(sT.length, sN.length); i++) {
+                let dT = parseInt(sT[i] || 0), dN = parseInt(sN[i] || 0);
+                if (dN === 0) continue;
+                let has5 = dT >= 5, low = dT % 5;
+                if (op === 1) {
+                    if (!((dN <= (4-low)) || (dN >= 5 && !has5 && (dN-5 <= 4-low)))) res.isSimple = false;
+                    if (dN < 5 && dN > (4-low) && !has5) res.isSmall = true;
+                    if (dT + dN >= 10) res.isBig = true;
+                } else {
+                    if (!((dN <= low) || (dN >= 5 && has5 && (dN-5 <= low)))) res.isSimple = false;
+                    if (dN < 5 && dN > low && has5) res.isSmall = true;
+                    if (dT < dN) res.isBig = true;
+                }
+            }
+            return res;
+        }
+
+        function generate() {
+            const method = document.getElementById("method").value;
+            const cols = parseInt(document.getElementById("columns").value);
+            const rows = parseInt(document.getElementById("rows").value);
+            const qCount = parseInt(document.getElementById("questions").value);
+            isTimer = (document.getElementById("time-mode").value === "timer");
+            currentTime = isTimer ? parseInt(document.getElementById("timer-choice").value) : 0;
+
+            data = [];
+            for (let i = 0; i < qCount; i++) {
+                let moves = [], currentTotal = 0;
+                for (let r = 0; r < rows; r++) {
+                    let num, sign, valid = false, tries = 0;
+                    while(!valid && tries < 2000) {
+                        num = 0;
+                        for(let c=0; c<cols; c++) num += Math.floor(Math.random()*10) * Math.pow(10, c);
+                        if (num === 0) num = 1;
+                        sign = (r === 0) ? 1 : (Math.random() < 0.5 ? 1 : -1);
+                        let info = getMoveDetails(currentTotal, num, sign);
+                        if (info.possible) {
+                            if (method === "Simple") valid = info.isSimple && !info.isBig;
+                            else if (method === "Small Friend") {
+                                if (info.isBig) valid = false;
+                                else valid = tries < 1500 ? info.isSmall : (info.isSimple || info.isSmall);
+                            }
+                            else if (method === "Big Friend") valid = tries < 1500 ? info.isBig : true;
+                            else valid = true;
+                        }
+                        tries++;
+                    }
+                    moves.push(sign * num);
+                    currentTotal += (sign * num);
+                }
+                data.push({ moves, total: currentTotal, studentAnswer: "", timeTaken: 0 });
+            }
+            startQuiz();
+        }
+
+        function startQuiz() {
+            document.getElementById("menu-container").style.display = "none";
+            document.getElementById("table-container").style.display = "block";
+            renderCards();
+            qStartTime = Date.now();
+            updateTimeDisplay();
+            timerInterval = setInterval(() => {
+                if (isTimer) {
+                    currentTime--;
+                    if (currentTime <= 0) { clearInterval(timerInterval); showFinalResults(); }
+                } else { currentTime++; }
+                updateTimeDisplay();
+            }, 1000);
+        }
+
+        function updateTimeDisplay() {
+            let t = Math.abs(currentTime);
+            let m = Math.floor(t / 60), s = t % 60;
+            document.getElementById("time-pill").innerText = `${m}:${s < 10 ? '0'+s : s}`;
+        }
+
+        function renderCards() {
+            const area = document.getElementById("quiz-area");
+            area.innerHTML = "";
+            data.forEach((item, index) => {
+                const card = document.createElement("div");
+                card.className = `equation-card ${index === 0 ? 'active' : ''}`;
+                card.id = `q-${index}`;
+                let html = `<h2>Question ${index+1} / ${data.length}</h2><table class="soroban-table">`;
+                item.moves.forEach((m, r) => {
+                    let val = r === 0 ? Math.abs(m) : (m < 0 ? "-" + Math.abs(m) : "+" + m);
+                    html += `<tr><td>${val}</td></tr>`;
+                });
+                html += `</table><input type="number" id="ans-${index}" class="ans-input" placeholder="?"><br>`;
+                
+                const btn = document.createElement("button");
+                btn.className = "btn-main";
+                btn.style.maxWidth = "300px";
+                btn.innerText = index < data.length - 1 ? "Next Question" : "Finish Quiz";
+                btn.onclick = () => {
+                    let now = Date.now();
+                    data[index].timeTaken = Math.round((now - qStartTime) / 1000);
+                    qStartTime = now;
+                    data[index].studentAnswer = document.getElementById(`ans-${index}`).value;
+                    if (index < data.length - 1) {
+                        document.getElementById(`q-${index}`).classList.remove('active');
+                        document.getElementById(`q-${index+1}`).classList.add('active');
+                    } else {
+                        clearInterval(timerInterval);
+                        showFinalResults();
+                    }
+                };
+                card.innerHTML = html; card.appendChild(btn); area.appendChild(card);
+            });
+        }
+
+        function showFinalResults() {
+            document.getElementById("quiz-area").style.display = "none";
+            document.getElementById("results-screen").style.display = "block";
+            let score = 0, html = "";
+            data.forEach((item, i) => {
+                const isCorrect = Number(item.studentAnswer) === item.total;
+                if(isCorrect) score++;
+                html += `<div class="result-item ${isCorrect?'correct':'wrong'}">
+                    Q${i+1}: ${isCorrect?'Correct':'Wrong'} | Result: ${item.total} (Yours: ${item.studentAnswer || '--'}) | Time: ${item.timeTaken}s
+                </div>`;
+            });
+            document.getElementById("final-score").innerText = `Final Score: ${score} / ${data.length}`;
+            document.getElementById("total-time-spent").innerText = "Total Time: " + document.getElementById("time-pill").innerText;
+            document.getElementById("detailed-results").innerHTML = html;
+        }
+
+        function savePDF() {
+            const { jsPDF } = window.jspdf;
+            let doc = new jsPDF();
+            doc.setFont("helvetica", "bold");
+            doc.text(`BrainFitBit Report - ${studentName}`, 20, 20);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Total Time: ${document.getElementById("time-pill").innerText}`, 20, 30);
+            let y = 45;
+            data.forEach((item, i) => {
+                let isCorrect = Number(item.studentAnswer) === item.total;
+                doc.setTextColor(isCorrect ? 0 : 200, isCorrect ? 150 : 0, 0);
+                doc.text(`Q${i+1}: ${isCorrect?'CORRECT':'WRONG'} | Correct: ${item.total} | Yours: ${item.studentAnswer} | Time: ${item.timeTaken}s`, 20, y);
+                y += 10;
+                if(y > 270) { doc.addPage(); y = 20; }
+            });
+            doc.save(`Results_${studentName}.pdf`);
+        }
+
+        function openTeacherLogin() {
+            let id = prompt("Teacher ID:");
+            let pass = prompt("Password:");
+            if(id === "FelipeMoreno" && pass === "2906Noah") {
+                window.location.href = "teacher.html"; 
+            } else {
+                alert("Invalid ID or Password.");
+            }
+        }
+    </script>
 </body>
 </html>
