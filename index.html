@@ -103,28 +103,52 @@ function validMove(total, num, method, op) {
         let p = Math.pow(10, i);
         let dTotal = Math.floor((total / p) % 10);
         let dNum = Math.floor((num / p) % 10);
-        if (dNum === 0) continue; 
-        
-        let hasFive = dTotal >= 5, lower = dTotal % 5;
+        if (dNum === 0) continue;
 
-        if (op === 1) { // Addition
-            let isSimple = (dNum <= (4-lower)) || (dNum >= 5 && !hasFive && (dNum-5 <= 4-lower));
-            let isSmall = (dNum < 5) && (dNum > (4-lower)) && !hasFive;
+        let hasFive = dTotal >= 5;
+        let lowerBeads = dTotal % 5;
+
+        if (op === 1) { // --- SOMA ---
+            // Movimento Direto (sem fórmulas)
+            let isSimple = (dNum <= (4 - lowerBeads)) || (dNum >= 5 && !hasFive && (dNum - 5 <= 4 - lowerBeads));
+            // Amigo de 5 (usa a conta de cima, ex: 4+1)
+            let isSmall = (dNum < 5) && (dNum > (4 - lowerBeads)) && !hasFive;
+            // Amigo de 10 (passa para a próxima coluna, ex: 9+1 ou 6+4)
             let isBig = (dTotal + dNum >= 10);
-            if (method === "Simple") { if (!isSimple || isBig) return false; }
-            else if (method === "Small Friend") { if (isBig || (!isSmall && !isSimple)) return false; }
-            else if (method === "Big Friend") { if (!isSimple && !isBig) return false; }
-        } else { // Subtraction
-            let isSimpleSub = (dNum <= lower) || (dNum >= 5 && hasFive && (dNum-5 <= lower));
-            let isSmallSub = (dNum < 5) && (dNum > lower) && hasFive;
+
+            if (method === "Simple") {
+                if (!isSimple || isBig) return false;
+            } 
+            else if (method === "Small Friend") {
+                // Permite simples e pequenos amigos, mas PROÍBE passar de 10
+                if (isBig || (!isSimple && !isSmall)) return false;
+            } 
+            else if (method === "Big Friend") {
+                // Permite simples e grandes amigos
+                if (!isSimple && !isBig) return false;
+            }
+            else if (method === "Mixed") {
+                // Permite tudo (Combinação de 5 e 10)
+                return true;
+            }
+        } else { // --- SUBTRAÇÃO ---
+            let isSimpleSub = (dNum <= lowerBeads) || (dNum >= 5 && hasFive && (dNum - 5 <= lowerBeads));
+            let isSmallSub = (dNum < 5) && (dNum > lowerBeads) && hasFive;
             let isBigSub = (dTotal < dNum);
-            if (method === "Simple") { if (!isSimpleSub || isBigSub) return false; }
-            else if (method === "Small Friend") { if (isBigSub || (!isSmallSub && !isSimpleSub)) return false; }
+
+            if (method === "Simple") {
+                if (!isSimpleSub || isBigSub) return false;
+            } 
+            else if (method === "Small Friend") {
+                if (isBigSub || (!isSimpleSub && !isSmallSub)) return false;
+            }
+            else if (method === "Big Friend") {
+                if (!isSimpleSub && !isBigSub) return false;
+            }
         }
     }
     return true;
 }
-
 function generate() {
     const method = document.getElementById("method").value;
     const cols = parseInt(document.getElementById("columns").value);
@@ -232,14 +256,64 @@ function restartToMenu() {
 function savePDF() {
     const { jsPDF } = window.jspdf;
     let doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text(`BrainFitBit Report - ${studentName}`, 15, 15);
-    doc.setFontSize(12);
+    let y = 20;
+
+    // Cabeçalho estilizado
+    doc.setFont("courier", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(26, 115, 232); // Azul do título
+    doc.text("BrainFitBit - Training Report", 105, y, { align: "center" });
+    
+    y += 15;
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Student: ${studentName}`, 20, y);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, y);
+    
+    y += 10;
+    doc.setLineWidth(0.5);
+    doc.line(20, y, 190, y); // Linha divisória
+    
+    y += 15;
+    let score = 0;
+
     data.forEach((item, i) => {
-        let status = Number(item.studentAnswer) === item.total ? "OK" : "WRONG";
-        doc.text(`Q${i+1}: [${item.moves.join(", ")}] = ${item.total} (Student: ${item.studentAnswer}) - ${status}`, 15, 25 + (i*10));
+        const isCorrect = Number(item.studentAnswer) === item.total;
+        if(isCorrect) score++;
+
+        // Quadrado de fundo para cada questão (cinza claro)
+        doc.setFillColor(248, 250, 252);
+        doc.rect(20, y - 5, 170, 15, 'F');
+
+        // Texto da Questão
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Question ${i + 1}:`, 25, y);
+
+        if (isCorrect) {
+            doc.setTextColor(16, 185, 129); // Verde Sucesso
+            doc.text(`✔ Correct! Answer: ${item.total}`, 60, y);
+        } else {
+            doc.setTextColor(239, 68, 68); // Vermelho Erro
+            doc.text(`✘ Wrong. Your: ${item.studentAnswer || 'Empty'} | Correct: ${item.total}`, 60, y);
+        }
+
+        y += 15;
+
+        // Adicionar nova página se o conteúdo for muito longo
+        if (y > 270) {
+            doc.addPage();
+            y = 20;
+        }
     });
-    doc.save(`Soroban_Results_${studentName}.pdf`);
+
+    // Rodapé com Score Final
+    y += 10;
+    doc.setFontSize(16);
+    doc.setTextColor(26, 115, 232);
+    doc.text(`Final Score: ${score} / ${data.length}`, 105, y + 10, { align: "center" });
+
+    doc.save(`Results_${studentName}_BrainFitBit.pdf`);
 }
 
 function openTeacherLogin() {
