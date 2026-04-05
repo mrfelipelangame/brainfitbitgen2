@@ -7,26 +7,37 @@
         :root { --primary: #2563eb; --success: #10b981; --danger: #ef4444; --bg: #f8fafc; --text: #1e293b; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .container { max-width: 450px; width: 100%; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: center; }
-        #timer { font-size: 1.5rem; font-weight: 800; color: var(--danger); border: 2px solid #eee; display: inline-block; padding: 5px 20px; border-radius: 20px; margin-bottom: 15px; }
+        
+        /* Estilo das imagens */
+        .header-img { width: 120px; height: auto; margin-bottom: 10px; border-radius: 10px; }
+        .final-img { width: 200px; height: auto; margin: 20px 0; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        #timer { font-size: 1.5rem; font-weight: 800; color: var(--danger); border: 2px solid #eee; display: inline-block; padding: 5px 20px; border-radius: 20px; margin-bottom: 15px; min-width: 80px; }
         .nums { font-size: 40px; font-weight: bold; margin: 20px 0; line-height: 1.2; }
         input { width: 100%; padding: 15px; font-size: 24px; text-align: center; border: 3px solid #ddd; border-radius: 10px; box-sizing: border-box; }
         button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; margin-top: 15px; cursor: pointer; }
-        .btn-save { background: var(--success); }
+        .btn-save { background: var(--success); display: flex; align-items: center; justify-content: center; gap: 8px; }
     </style>
 </head>
 <body>
 <div class="container" id="box">
+    <div id="header-area">
+        <img src="CapibaraHW.png" alt="Studying..." class="header-img">
+    </div>
+
     <div id="timer">00:00</div>
-    <h2 id="name-tag">Student</h2>
+    <h2 id="name-tag" style="margin-top:0;">Student</h2>
+
     <div id="game">
         <p id="q-count">Question 1</p>
         <div class="nums" id="display"></div>
         <input type="number" id="ans" placeholder="Answer" autofocus>
         <button onclick="next()">Next Question</button>
     </div>
+
     <div id="finish" style="display:none">
         <h3 id="score"></h3>
-        <button class="btn-save" onclick="save()">💾 Download JSON for Teacher</button>
+        <button class="btn-save" onclick="save()">💾 Download for Teacher</button>
     </div>
 </div>
 
@@ -41,6 +52,7 @@
     };
 
     let data = [], idx = 0, start = Date.now();
+    let timerInterval;
 
     function init() {
         document.getElementById('name-tag').innerText = cfg.name;
@@ -62,7 +74,8 @@
             localStorage.setItem('hw_cache', JSON.stringify(data));
         }
         render();
-        setInterval(() => {
+
+        timerInterval = setInterval(() => {
             const d = Math.floor((Date.now()-start)/1000);
             document.getElementById('timer').innerText = `${Math.floor(d/60).toString().padStart(2,'0')}:${(d%60).toString().padStart(2,'0')}`;
         }, 1000);
@@ -78,8 +91,11 @@
         const val = document.getElementById('ans').value;
         if(!val) return;
         data[idx].studentAnswers = [parseInt(val)];
-        if(++idx < cfg.q) render();
-        else {
+        
+        if(++idx < cfg.q) {
+            render();
+        } else {
+            clearInterval(timerInterval);
             document.getElementById('game').style.display = 'none';
             document.getElementById('finish').style.display = 'block';
             localStorage.removeItem('hw_cache');
@@ -94,7 +110,13 @@
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = `Results_${cfg.name}.json`; a.click();
-        document.getElementById('box').innerHTML = "<h2>You're awesome! See you!</h2>";
+        
+        // --- MENSAGEM FINAL COM IMAGEM (CapiDidIt.png) ---
+        document.getElementById('box').innerHTML = `
+            <img src="CapiDidIt.png" alt="Mission Accomplished" class="final-img">
+            <h2 style="color: var(--primary);">You done your homework, you're awesome!</h2>
+            <p>See you!</p>
+        `;
     }
     window.onload = init;
 </script>
