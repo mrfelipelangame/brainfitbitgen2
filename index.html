@@ -13,12 +13,12 @@ button { cursor:pointer; background:#2196F3; color:white; border:none; font-weig
 button:hover { transform:scale(1.05); background:#1976D2; }
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
 input[type=number]{-moz-appearance:textfield;}
-#table-wrapper{overflow-x:auto;margin:20px 0;padding:10px;}
+#table-wrapper{margin:20px 0;padding:10px;}
 table{border-collapse:collapse;margin:auto;background:white;border-radius:8px;}
-td{border:1px solid #555;text-align:center;font-size:24px;min-width:60px;font-weight:bold;padding:8px;}
+td{border:1px solid #555;text-align:center;font-size:32px;min-width:100px;font-weight:bold;padding:15px;}
 .correct{background:#9df29d!important;border:2px solid green;}
 .wrong{background:#ea9e9e!important;border:2px solid red;}
-.answer-input{width:80px;text-align:center;font-size:20px;font-weight:bold;border-radius:5px;border:2px solid #888;}
+.answer-input{width:120px;text-align:center;font-size:24px;font-weight:bold;border-radius:5px;border:2px solid #888;}
 .logo-main{max-width:250px;height:auto;}
 .logo-small{max-width:120px;height:auto;margin-bottom:10px;}
 .method-buttons{margin-top:20px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;}
@@ -28,12 +28,9 @@ td{border:1px solid #555;text-align:center;font-size:24px;min-width:60px;font-we
 .modal-content{background:white;padding:25px;border-radius:12px;max-width:500px;text-align:left;box-shadow:0 10px 25px rgba(0,0,0,0.3);position:relative;}
 .close-btn{float:right;background:#f44336; padding:5px 10px; border-radius:5px; color:white; border:none; cursor:pointer;}
 
-#teacher-btn{
+#teacher-btn, #home-btn {
   position:fixed;
   top:20px;
-  right:20px;
-  background:#f44336;
-  color:white;
   padding:10px 15px;
   border:none;
   border-radius:8px;
@@ -41,13 +38,20 @@ td{border:1px solid #555;text-align:center;font-size:24px;min-width:60px;font-we
   font-weight:bold;
   z-index:1000;
 }
+#teacher-btn { right:20px; background:#f44336; color:white; }
+#home-btn { left:20px; background:#4CAF50; color:white; }
+
 #teacher-modal .modal-content input{width:80%; padding:10px; margin:5px; border-radius:5px; border:1px solid #ccc; font-size:1rem;}
 #teacher-modal .modal-content button{margin-top:10px;}
 #teacher-error{color:red;margin-top:10px;}
+
+.question-card { display: none; }
+.question-card.active { display: block; }
 </style>
 </head>
 <body>
 
+<button id="home-btn" onclick="location.reload()">Home</button>
 <button id="teacher-btn" onclick="openTeacherLogin()">Teacher</button>
 
 <div id="welcome-screen">
@@ -93,7 +97,9 @@ td{border:1px solid #555;text-align:center;font-size:24px;min-width:60px;font-we
 
 <div id="table-container" style="display:none">
 <h2 id="table-title"></h2>
-<div id="table-wrapper"><div id="table"></div></div>
+<div id="table-wrapper">
+    <div id="quiz-flow"></div>
+</div>
 <div id="result-text" style="font-size:1.5rem;font-weight:bold;margin:15px"></div>
 <div id="restart-container"></div>
 </div>
@@ -135,7 +141,7 @@ td{border:1px solid #555;text-align:center;font-size:24px;min-width:60px;font-we
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-let data=[], studentName="";
+let data=[], studentName="", currentQuestionIndex = 0;
 
 function showMenu(){
   let name=document.getElementById("student-name").value.trim();
@@ -153,6 +159,7 @@ function closeModal(){
 function openModal(id){ document.getElementById(id).style.display="flex"; }
 function openTeacherLogin(){ document.getElementById("teacher-modal").style.display="flex"; }
 
+// MOTOR DE CÁLCULO MANTIDO
 function generateNumber(maxColumns){
   let column = Math.floor(Math.random() * maxColumns);
   let digit = Math.floor(Math.random() * 9) + 1;
@@ -197,8 +204,6 @@ function validMove(total, num, method, op) {
         }
         else if (method === "Big Friend") {
             if (op === 1) {
-                // Se a soma dTotal + dNum for <= 9, não é Big Friend puro (é simple ou small)
-                // Big Friend foca no transporte (carry)
                 if (dTotal + dNum < 10) return false; 
             }
         }
@@ -212,6 +217,7 @@ function generate(){
   let rows=parseInt(document.getElementById("rows").value);
   let q=parseInt(document.getElementById("questions").value);
   data=[];
+  currentQuestionIndex = 0;
   for(let i=0;i<q;i++){
     let moves=[], total=0;
     for(let r=0;r<rows;r++){
@@ -226,48 +232,88 @@ function generate(){
       moves.push(sign*num);
       total += sign*num;
     }
-    data.push({moves:moves,total:total});
+    data.push({moves:moves,total:total, studentAnswer: null});
   }
-  render(rows,q);
+  renderFlow(rows,q);
   document.getElementById("menu-container").style.display="none";
   document.getElementById("table-container").style.display="block";
   document.getElementById("table-title").innerText = "Good luck "+studentName+"!";
 }
 
-function render(rows,q){
-  let html="<table>";
-  for(let r=0;r<rows;r++){
-    html+="<tr>";
-    for(let i=0;i<q;i++){
-      let v = data[i].moves[r];
-      let display = r===0? Math.abs(v) : (v<0 ? "-"+Math.abs(v) : "+"+v);
-      html+="<td>"+display+"</td>";
-    }
-    html+="</tr>";
-  }
-  html+="<tr>";
-  for(let i=0;i<q;i++){
-    html+="<td><input type='number' id='a"+i+"' class='answer-input' placeholder='?'></td>";
-  }
-  html+="</tr></table>";
-  html+="<br><button id='check-btn' onclick='check()'>Check Answers</button>";
-  document.getElementById("table").innerHTML=html;
+function renderFlow(rows, q) {
+    let container = document.getElementById("quiz-flow");
+    container.innerHTML = "";
+    
+    data.forEach((question, index) => {
+        let div = document.createElement("div");
+        div.className = `question-card ${index === 0 ? 'active' : ''}`;
+        div.id = `q-card-${index}`;
+        
+        let tableHtml = `<h3>Equation ${index + 1} of ${q}</h3><table>`;
+        for (let r = 0; r < rows; r++) {
+            let v = question.moves[r];
+            let display = r === 0 ? Math.abs(v) : (v < 0 ? "-" + Math.abs(v) : "+" + v);
+            tableHtml += `<tr><td>${display}</td></tr>`;
+        }
+        tableHtml += `<tr><td><input type='number' id='ans-${index}' class='answer-input' placeholder='?'></td></tr></table>`;
+        
+        div.innerHTML = tableHtml;
+        
+        let btnBox = document.createElement("div");
+        btnBox.style.marginTop = "20px";
+        
+        if (index < q - 1) {
+            let nextBtn = document.createElement("button");
+            nextBtn.innerText = "Next Question";
+            nextBtn.onclick = () => nextQuestion(index);
+            btnBox.appendChild(nextBtn);
+        } else {
+            let checkBtn = document.createElement("button");
+            checkBtn.innerText = "Check Answers";
+            checkBtn.style.background = "#4CAF50";
+            checkBtn.onclick = check;
+            btnBox.appendChild(checkBtn);
+        }
+        
+        div.appendChild(btnBox);
+        container.appendChild(div);
+    });
+}
+
+function nextQuestion(index) {
+    let input = document.getElementById(`ans-${index}`);
+    if(!input.value) { alert("Please answer first!"); return; }
+    
+    document.getElementById(`q-card-${index}`).classList.remove('active');
+    document.getElementById(`q-card-${index + 1}`).classList.add('active');
 }
 
 function check(){
   let correct=0;
+  let summaryHtml = "<h3>Final Results</h3><table style='margin-bottom:20px;'>";
+  
   for(let i=0;i<data.length;i++){
-    let input=document.getElementById("a"+i);
+    let input=document.getElementById("ans-"+i);
     let val=Number(input.value);
-    if(val===data[i].total){ input.classList.add("correct"); correct++; }
-    else{ input.classList.add("wrong"); }
-    input.disabled = true;
+    data[i].studentAnswer = val;
+    
+    let isCorrect = (val === data[i].total);
+    if(isCorrect) correct++;
+    
+    summaryHtml += `<tr>
+        <td style='font-size:18px;'>Eq ${i+1}</td>
+        <td class='${isCorrect ? "correct" : "wrong"}' style='font-size:18px;'>
+            Your: ${val} | Correct: ${data[i].total}
+        </td>
+    </tr>`;
   }
-  document.getElementById("result-text").innerText="Score: "+correct+" / "+data.length;
-  let checkBtn=document.getElementById("check-btn");
-  if(checkBtn) checkBtn.remove();
+  summaryHtml += "</table>";
+  
+  document.getElementById("quiz-flow").innerHTML = summaryHtml;
+  document.getElementById("result-text").innerText="Final Score: "+correct+" / "+data.length;
+  
   document.getElementById("restart-container").innerHTML=
-    "<button onclick='restart()'>Restart</button><button onclick='savePDF()'>Save PDF</button>";
+    "<button onclick='restart()' style='background:#2196F3'>Restart</button><button onclick='savePDF()' style='background:#607D8B'>Save PDF</button>";
 }
 
 function restart(){
@@ -281,13 +327,9 @@ function restart(){
 function loginTeacher() {
     let id = document.getElementById("teacher-id").value;
     let pass = document.getElementById("teacher-pass").value;
-
-    // Verifica as credenciais
     if(id === "FelipeMoreno" && pass === "2906Noah") {
-        // Se estiver correto, redireciona para a página teacher.html
         window.location.href = "teacher.html";
     } else {
-        // Se estiver errado, mostra a mensagem de erro
         document.getElementById("teacher-error").innerText = "Invalid Login";
     }
 }
@@ -303,11 +345,11 @@ function savePDF(){
   data.forEach((item,i)=>{
     doc.setTextColor(0,0,0);
     doc.text("Q"+(i+1)+": "+item.moves.join(" | "), 15, y);
-    doc.text("Result: "+item.total, 160, y);
+    doc.text("Result: "+item.total + " (Your Answer: "+item.studentAnswer+")", 130, y);
     y+=10;
     if(y > 275) { doc.addPage(); y = 20; }
   });
-  doc.save("BrainFitBit_Exercises.pdf");
+  doc.save("BrainFitBit_Results.pdf");
 }
 </script>
 </body>
