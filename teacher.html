@@ -14,7 +14,6 @@
         }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; margin: 0; padding: 20px; }
         
-        /* Estilo para os botões de navegação superiores */
         .nav-header {
             max-width: 900px;
             margin: 0 auto 20px auto;
@@ -48,6 +47,18 @@
         label { display: block; font-weight: 600; margin: 10px 0 5px; font-size: 0.9rem; }
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
         
+        /* Estilo para o Checkbox do Timer */
+        .timer-config {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f1f5f9;
+            border-radius: 6px;
+        }
+        .timer-config input { width: auto; cursor: pointer; }
+
         button { width: 100%; padding: 12px; margin-top: 15px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         .btn-alt { background: #64748b; }
@@ -59,6 +70,15 @@
         
         hr { border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0; }
         #generated-link { background: #f1f5f9; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 11px; word-break: break-all; margin-top: 10px; display: none; border: 1px dashed #cbd5e1; }
+        
+        .time-badge {
+            background: var(--danger);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -100,6 +120,11 @@
                 <div><label>Rows</label><input type="number" id="teacher-rows" value="5"></div>
                 <div><label>Qty</label><input type="number" id="teacher-questions" value="5"></div>
             </div>
+
+            <div class="timer-config">
+                <input type="checkbox" id="enable-timer" checked>
+                <label style="margin:0; cursor:pointer;" for="enable-timer">Enable Stopwatch for Student</label>
+            </div>
         </section>
     </div>
 
@@ -124,10 +149,8 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
 <script>
-    // INITIALIZE EMAILJS
     (function(){ emailjs.init('MukrMYpsZqIkdIG0s'); })();
 
-    // STUDENT DATABASE MANAGEMENT
     function loadStudents() {
         const students = JSON.parse(localStorage.getItem("students") || "[]");
         const select = document.getElementById("teacher-student-select");
@@ -143,16 +166,12 @@
     function registerStudent() {
         const name = document.getElementById("new-student-name").value.trim();
         const email = document.getElementById("new-student-email").value.trim();
-        
         if (!name || !email) { alert("Error: Name and Email are required."); return; }
-        
         let students = JSON.parse(localStorage.getItem("students") || "[]");
         if (students.find(s => s.email === email)) { alert("Error: Student email already registered."); return; }
-        
         students.push({name, email});
         localStorage.setItem("students", JSON.stringify(students));
         loadStudents();
-        
         document.getElementById("register-msg").innerText = "✔ Student registered successfully!";
         setTimeout(() => document.getElementById("register-msg").innerText = "", 3000);
         document.getElementById("new-student-name").value = "";
@@ -169,7 +188,8 @@
             method: document.getElementById("teacher-method").value,
             cols: Math.max(1, parseInt(document.getElementById("teacher-cols").value) || 1),
             rows: Math.max(1, parseInt(document.getElementById("teacher-rows").value) || 1),
-            q: Math.max(1, parseInt(document.getElementById("teacher-questions").value) || 1)
+            q: Math.max(1, parseInt(document.getElementById("teacher-questions").value) || 1),
+            timer: document.getElementById("enable-timer").checked // Parâmetro do timer
         };
     }
 
@@ -179,19 +199,20 @@
         return `${folderPath}/student.html`;
     }
 
+    // ATUALIZADO: Inclui o parâmetro do timer na URL
     function generateHomeworkLink() {
         const data = getTaskParams();
         if (!data) { alert("Please select a student from the list."); return; }
 
         const baseUrl = getStudentBaseUrl();
-        const url = `${baseUrl}?student=${encodeURIComponent(data.name)}&method=${encodeURIComponent(data.method)}&cols=${data.cols}&rows=${data.rows}&q=${data.q}`;
+        const url = `${baseUrl}?student=${encodeURIComponent(data.name)}&method=${encodeURIComponent(data.method)}&cols=${data.cols}&rows=${data.rows}&q=${data.q}&timer=${data.timer}`;
         
         const linkBox = document.getElementById("generated-link");
         linkBox.innerText = url;
         linkBox.style.display = "block";
         
         navigator.clipboard.writeText(url).then(() => {
-            alert("Success: Link generated for GitHub and copied!");
+            alert("Success: Link generated with Timer settings and copied!");
         });
     }
 
@@ -200,7 +221,7 @@
         if (!data) { alert("Please select a student."); return; }
 
         const baseUrl = getStudentBaseUrl();
-        const homeworkLink = `${baseUrl}?student=${encodeURIComponent(data.name)}&method=${encodeURIComponent(data.method)}&cols=${data.cols}&rows=${data.rows}&q=${data.q}`;
+        const homeworkLink = `${baseUrl}?student=${encodeURIComponent(data.name)}&method=${encodeURIComponent(data.method)}&cols=${data.cols}&rows=${data.rows}&q=${data.q}&timer=${data.timer}`;
         
         emailjs.send('service_qs2cyzt', 'template_u09c9if', {
             student_name: data.name,
@@ -228,10 +249,18 @@
         reader.readAsText(fileInput.files[0]);
     }
 
+    // ATUALIZADO: Mostra o tempo total gasto na análise
     function renderResults(data) {
         const container = document.getElementById("answers-container");
         container.innerHTML = "";
         
+        // Verifica se há informação de tempo no arquivo (pegando do primeiro item ou da estrutura do JSON)
+        const totalTime = data[0]?.time || "N/A";
+
+        const summaryHeader = document.createElement("div");
+        summaryHeader.innerHTML = `<h3>Submission Details: <span class="time-badge">⏱ Total Time: ${totalTime}</span></h3>`;
+        container.appendChild(summaryHeader);
+
         data.forEach((item, index) => {
             let correctAnswers = 0;
             let tableContent = "<table>";
