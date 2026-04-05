@@ -1,174 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BrainFitBit - Soroban Student</title>
-<style>
-body{font-family:"Comic Sans MS",cursive,sans-serif; max-width:950px;margin:auto;padding:20px;background:#a0daf3;color:#2c3e50;}
-#welcome-screen,#table-container{text-align:center;background:rgba(255,255,255,0.95);padding:30px;border-radius:15px;box-shadow:0 10px 25px rgba(0,0,0,0.1);margin-top:20px;}
-h1{color:#1a73e8;}
-input,select,button{padding:10px;margin:5px;border-radius:8px;border:1px solid #ccc;font-size:1rem;}
-button{cursor:pointer;background:#2196F3;color:white;border:none;font-weight:bold;transition:transform .2s;}
-button:hover{transform:scale(1.05);background:#1976D2;}
-#table-wrapper{overflow-x:auto;margin:20px 0;padding:10px;}
-table{border-collapse:collapse;margin:auto;background:white;border-radius:8px;}
-td{border:1px solid #ddd;padding:12px;text-align:center;font-size:26px;min-width:85px;font-weight:bold;}
-.correct{background:#9df29d!important;border:2px solid green;}
-.wrong{background:#ea9e9e!important;border:2px solid red;}
-.answer-input{width:75px;text-align:center;font-size:1.2rem;font-weight:bold;outline:none;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainFitBit - Student Training</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        .container { 
+            max-width: 1000px; 
+            width: 100%; 
+            background: var(--card-bg); 
+            padding: 40px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
+            margin-top: 20px;
+        }
+
+        h1 { 
+            color: var(--primary); 
+            text-align: center; 
+            margin-bottom: 8px; 
+            font-size: 2rem;
+        }
+
+        .subtitle { 
+            text-align: center; 
+            color: #64748b; 
+            margin-bottom: 40px; 
+            font-size: 1.1rem;
+        }
+
+        /* Tabela de Exercícios */
+        .table-scroll { 
+            overflow-x: auto; 
+            margin-bottom: 30px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 12px; 
+        }
+
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            background: white; 
+            min-width: 600px; 
+        }
+
+        td { 
+            border: 1px solid #f1f5f9; 
+            padding: 18px 12px; 
+            text-align: center; 
+            font-size: 26px; 
+            font-weight: 700; 
+            color: #334155;
+        }
+
+        tr:nth-child(even) { background: #f8fafc; }
+        
+        /* Estilo dos Inputs */
+        .answer-input { 
+            width: 85%; 
+            padding: 12px; 
+            border: 2px solid #cbd5e1; 
+            border-radius: 8px; 
+            text-align: center; 
+            font-size: 22px; 
+            font-weight: bold; 
+            color: var(--primary);
+            transition: all 0.2s;
+        }
+
+        .answer-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Estados de Resposta */
+        .correct { 
+            background: #dcfce7 !important; 
+            border-color: var(--success) !important; 
+            color: #065f46 !important; 
+        }
+
+        .wrong { 
+            background: #fee2e2 !important; 
+            border-color: var(--danger) !important; 
+            color: #991b1b !important; 
+        }
+
+        /* Botões e Ações */
+        .actions { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            margin-top: 30px; 
+            flex-wrap: wrap; 
+        }
+
+        button { 
+            padding: 14px 32px; 
+            font-size: 1rem; 
+            font-weight: 600; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
+        .btn-check { background: var(--primary); color: white; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
+        .btn-download { background: #475569; color: white; }
+        .btn-print { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+        #result-summary { 
+            text-align: center; 
+            font-size: 1.75rem; 
+            font-weight: 800; 
+            margin-top: 30px; 
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        /* Ajustes para impressão */
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; border: none; padding: 0; }
+            .actions, button { display: none !important; }
+            td { font-size: 20px; padding: 10px; }
+        }
+    </style>
 </head>
 <body>
 
-<div id="table-container">
-<h2 id="table-title"></h2>
-<div id="table-wrapper"><div id="table"></div></div>
-<div id="result-text" style="font-size:1.5rem;font-weight:bold;margin:15px"></div>
-<div id="restart-container"></div>
+<div class="container">
+    <h1 id="welcome-msg">Soroban Training</h1>
+    <p class="subtitle" id="config-info">Analyzing parameters...</p>
+
+    <div class="table-scroll">
+        <table>
+            <tbody id="table-body"></tbody>
+            <tfoot id="table-foot"></tfoot>
+        </table>
+    </div>
+
+    <div class="actions" id="action-area">
+        <button class="btn-check" onclick="checkAnswers()">Verify My Answers</button>
+    </div>
+
+    <div id="result-summary"></div>
+
+    <div class="actions" id="post-action-area" style="display:none;">
+        <button class="btn-download" onclick="downloadJSON()">💾 Save JSON for Teacher</button>
+        <button class="btn-print" onclick="window.print()">🖨️ Print Results</button>
+        <button class="btn-check" onclick="location.reload()" style="background:#6366f1">🔄 New Session</button>
+    </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-let data=[];
+    let homeworkData = [];
+    const params = new URLSearchParams(window.location.search);
+    
+    const config = {
+        student: params.get('student') || "Student",
+        method: params.get('method') || "Simple",
+        cols: Math.max(1, parseInt(params.get('cols')) || 1),
+        rows: Math.max(2, parseInt(params.get('rows')) || 5),
+        q: Math.max(1, parseInt(params.get('q')) || 5)
+    };
 
-// ====== URL PARAMS ======
-function getUrlParams(){
-  let params={};
-  window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,(m,key,value)=>{params[key]=decodeURIComponent(value);});
-  return params;
-}
+    document.getElementById('welcome-msg').innerText = `Keep going, ${config.student}!`;
+    document.getElementById('config-info').innerText = `Method: ${config.method} | Columns: ${config.cols} | Questions: ${config.q}`;
 
-const params=getUrlParams();
-const studentName=params.student||"Student";
-const method=params.method||"Simple";
-const cols=parseInt(params.cols)||3;
-const rows=parseInt(params.rows)||5;
-const questions=parseInt(params.q)||5;
+    // --- LÓGICA DE SOROBAN (IDENTICA AO SEU TRAINER) ---
 
-// ====== GENERATE NUMBERS ======
-function generateNumber(maxColumns){
-  let column = Math.floor(Math.random() * maxColumns);
-  let digit = Math.floor(Math.random() * 9) + 1;
-  return digit * Math.pow(10, column);
-}
-
-// ====== VALIDATE METHOD ======
-function validMove(total,num,method,op){
-  if(num===0) return false;
-  let newTotal = op===1 ? total+num : total-num;
-  if(newTotal<0) return false;
-  
-  let column=Math.floor(Math.log10(num));
-  let place=Math.pow(10,column);
-  let digit=Math.floor(num/place);
-  let tDigit=Math.floor(total/place)%10;
-
-  if(method==="Simple"){
-    if(op===1){ return (tDigit+digit<=9)&&((tDigit%5)+digit<=4); }
-    else{ return (tDigit-digit>=0); }
-  }
-  if(method==="Small Friend"){
-    if(op===1){ return ((tDigit%5)+digit>4)&&(tDigit+digit<=9); }
-    else{ return (tDigit%5)<digit%5; }
-  }
-  if(method==="Big Friend"){
-    if(op===1){ return (tDigit+digit>9); }
-    else{ return (tDigit<digit); }
-  }
-  if(method==="Mixed"){ return true; }
-  return true;
-}
-
-// ====== GENERATE DATA ======
-function generateData(){
-  data=[];
-  for(let i=0;i<questions;i++){
-    let moves=[], total=0;
-    for(let r=0;r<rows;r++){
-      let num, sign, tries=0, valid=false;
-      while(!valid && tries<200){
-        num=generateNumber(cols);
-        sign=r===0?1:(Math.random()<0.5?1:-1);
-        valid=validMove(total,num,method,sign);
-        tries++;
-      }
-      if(!valid){ num=1; sign=1; }
-      total+=sign*num;
-      moves.push(sign*num);
+    function generateFullNumber(maxColumns) {
+        let num = 0;
+        for (let i = 0; i < maxColumns; i++) {
+            let digit = Math.floor(Math.random() * 10);
+            if (i === maxColumns - 1 && maxColumns > 1 && digit === 0) digit = 1;
+            num += digit * Math.pow(10, i);
+        }
+        return num;
     }
-    data.push({moves:moves,total:total});
-  }
-}
 
-// ====== RENDER TABLE ======
-function renderTable(){
-  let html="<table>";
-  for(let r=0;r<rows;r++){
-    html+="<tr>";
-    for(let i=0;i<questions;i++){
-      let v=data[i].moves[r];
-      let display = r===0? Math.abs(v) : (v<0?"-"+Math.abs(v):"+"+v);
-      html+="<td>"+display+"</td>";
+    function validMove(total, num, method, op) {
+        let newTotal = op === 1 ? total + num : total - num;
+        if (newTotal < 0) return false;
+        if (method === "All") return true;
+
+        for (let i = 0; i < 13; i++) {
+            let p = Math.pow(10, i);
+            let dTotal = Math.floor((total / p) % 10);
+            let dNum = Math.floor((num / p) % 10);
+            if (dNum === 0) continue; 
+
+            let hasFive = dTotal >= 5;
+            let lowerBeads = dTotal % 5;
+
+            if (op === 1) { // Adição
+                let isSimple = (dNum <= (4 - lowerBeads)) || (dNum >= 5 && !hasFive && (dNum - 5 <= 4 - lowerBeads));
+                let isSmall = (dNum < 5) && (dNum > (4 - lowerBeads)) && !hasFive;
+                let isBig = (dTotal + dNum >= 10);
+                let isMixed = isBig && ((dTotal + dNum) % 10 < 5) && !hasFive;
+
+                if (method === "Simple") { if (!isSimple || isBig) return false; }
+                else if (method === "Small Friend") {
+                    if (isBig) return false;
+                    if (!isSmall && !isSimple) return false;
+                }
+                else if (method === "Big Friend") { 
+                    if (!isBig && !isSimple) return false;
+                    if (isMixed) return false;
+                }
+                else if (method === "Mixed") { if (!isMixed && !isSimple) return false; }
+            } 
+            else { // Subtração
+                let isSimpleSub = (dNum <= lowerBeads) || (dNum >= 5 && hasFive && (dNum - 5 <= lowerBeads));
+                let isSmallSub = (dNum < 5) && (dNum > lowerBeads) && hasFive;
+                let isBigSub = (dTotal < dNum);
+                let isMixedSub = isBigSub && (dNum > 5) && (dTotal < 5);
+
+                if (method === "Simple") { if (!isSimpleSub || isBigSub) return false; }
+                else if (method === "Small Friend") {
+                    if (isBigSub) return false;
+                    if (!isSmallSub && !isSimpleSub) return false;
+                }
+                else if (method === "Big Friend") { if (!isBigSub && !isSimpleSub) return false; }
+                else if (method === "Mixed") { if (!isMixedSub && !isSimpleSub) return false; }
+            }
+        }
+        return true;
     }
-    html+="</tr>";
-  }
-  html+="<tr>";
-  for(let i=0;i<questions;i++){
-    html+="<td><input type='number' id='a"+i+"' class='answer-input' placeholder='?'></td>";
-  }
-  html+="</tr></table>";
-  html+="<br><button id='check-btn' onclick='checkAnswers()'>Check Answers</button>";
-  document.getElementById("table").innerHTML=html;
-  document.getElementById("table-title").innerText="Good luck "+studentName+"!";
-}
 
-// ====== CHECK ANSWERS ======
-function checkAnswers(){
-  let correct=0;
-  data.forEach((item,i)=>{
-    let input=document.getElementById("a"+i);
-    let val=Number(input.value);
-    input.disabled=true;
-    if(val===item.total){ input.classList.add("correct"); correct++; }
-    else{ input.classList.add("wrong"); }
-    item.studentAnswer=val; // salvar para JSON
-  });
-  document.getElementById("result-text").innerText="Score: "+correct+" / "+questions;
-  document.getElementById("check-btn").remove();
-  document.getElementById("restart-container").innerHTML=
-    "<button onclick='savePDF()'>Save PDF</button> <button onclick='saveJSON()'>Save JSON</button>";
-}
+    function initHomework() {
+        homeworkData = [];
+        for (let i = 0; i < config.q; i++) {
+            let moves = [], currentTotal = 0;
+            for (let r = 0; r < config.rows; r++) {
+                let num, sign, valid = false, tries = 0;
+                while (!valid && tries < 1500) {
+                    num = generateFullNumber(config.cols);
+                    sign = (r === 0) ? 1 : (Math.random() < 0.5 ? 1 : -1);
+                    valid = validMove(currentTotal, num, config.method, sign);
+                    tries++;
+                }
+                if (!valid) { num = 1; sign = (currentTotal > 0) ? -1 : 1; }
+                moves.push(sign * num);
+                currentTotal += (sign * num);
+            }
+            homeworkData.push({ moves, total: currentTotal, studentAnswer: null });
+        }
+        renderTable();
+    }
 
-// ====== SAVE PDF ======
-function savePDF(){
-  const { jsPDF }=window.jspdf;
-  let doc=new jsPDF();
-  doc.setFontSize(14);
-  doc.text("Student: "+studentName,15,15);
-  let y=25;
-  data.forEach((item,i)=>{
-    doc.text("Q"+(i+1)+": "+item.moves.join(" "),15,y);
-    y+=10;
-    doc.setTextColor(item.studentAnswer===item.total?0,150,0:200,0,0);
-    doc.text("Answer: "+item.studentAnswer+" (Correct: "+item.total+")",15,y);
-    y+=10;
-  });
-  doc.save("BrainFitBit_Homework.pdf");
-}
+    function renderTable() {
+        const tbody = document.getElementById('table-body');
+        const tfoot = document.getElementById('table-foot');
+        
+        let bodyHtml = "";
+        for (let r = 0; r < config.rows; r++) {
+            bodyHtml += "<tr>";
+            for (let q = 0; q < config.q; q++) {
+                let v = homeworkData[q].moves[r];
+                let display = (r === 0) ? Math.abs(v) : (v < 0 ? "-" + Math.abs(v) : "+" + v);
+                bodyHtml += `<td>${display}</td>`;
+            }
+            bodyHtml += "</tr>";
+        }
+        tbody.innerHTML = bodyHtml;
 
-// ====== SAVE JSON ======
-function saveJSON(){
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-  const link=document.createElement("a");
-  link.href=URL.createObjectURL(blob);
-  link.download="BrainFitBit_Homework.json";
-  link.click();
-}
+        let footHtml = "<tr>";
+        for (let q = 0; q < config.q; q++) {
+            footHtml += `<td><input type="number" class="answer-input" id="ans-${q}" placeholder="?"></td>`;
+        }
+        footHtml += "</tr>";
+        tfoot.innerHTML = footHtml;
+    }
 
-// ====== INIT ======
-generateData();
-renderTable();
+    function checkAnswers() {
+        let correctCount = 0;
+        homeworkData.forEach((item, i) => {
+            const input = document.getElementById(`ans-${i}`);
+            const val = parseInt(input.value);
+            item.studentAnswer = val;
+            input.disabled = true;
+
+            if (val === item.total) {
+                input.classList.add('correct');
+                correctCount++;
+            } else {
+                input.classList.add('wrong');
+                input.value = `${val || 0} (${item.total})`;
+            }
+        });
+
+        const summary = document.getElementById('result-summary');
+        summary.innerText = `Result: ${correctCount} / ${config.q}`;
+        summary.style.display = "block";
+        summary.style.background = correctCount === config.q ? '#dcfce7' : '#f1f5f9';
+        summary.style.color = correctCount === config.q ? '#166534' : '#1e293b';
+        
+        document.getElementById('action-area').style.display = "none";
+        document.getElementById('post-action-area').style.display = "flex";
+    }
+
+    function downloadJSON() {
+        const exportData = homeworkData.map(item => ({
+            moves: item.moves.map(m => [m]),
+            total: item.total,
+            studentAnswers: [item.studentAnswer]
+        }));
+
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `Results_${config.student}.json`;
+        a.click();
+    }
+
+    window.onload = initHomework;
 </script>
+
 </body>
 </html>
