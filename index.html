@@ -5,138 +5,198 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrainFitBit - Soroban Trainer</title>
 <style>
-body { font-family:"Comic Sans MS",cursive,sans-serif; max-width:950px; margin:auto; padding:20px; background:#a0daf3; color:#2c3e50; }
-#welcome-screen,#menu-container,#table-container { text-align:center; background:rgba(255,255,255,0.95); padding:30px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.1); margin-top:20px; }
-h1 { color:#1a73e8; margin-bottom:10px; }
-input,select,button { padding:10px; margin:5px; border-radius:8px; border:1px solid #ccc; font-size:1rem; }
-button { cursor:pointer; background:#2196F3; color:white; border:none; font-weight:bold; transition:transform .2s; }
-button:hover { transform:scale(1.05); background:#1976D2; }
-input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
-input[type=number]{-moz-appearance:textfield;}
-#table-wrapper{margin:20px 0;padding:10px;}
-table{border-collapse:collapse;margin:auto;background:white;border-radius:8px;}
-td{border:1px solid #555;text-align:center;font-size:32px;min-width:100px;font-weight:bold;padding:15px;}
-.correct{background:#9df29d!important;border:2px solid green;}
-.wrong{background:#ea9e9e!important;border:2px solid red;}
-.answer-input{width:120px;text-align:center;font-size:24px;font-weight:bold;border-radius:5px;border:2px solid #888;}
-.logo-main{max-width:250px;height:auto;}
-.logo-small{max-width:120px;height:auto;margin-bottom:10px;}
-.method-buttons{margin-top:20px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;}
-.method-btn{background:#ff9800;}
-.method-btn:hover{background:#e68900;}
-.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;}
-.modal-content{background:white;padding:25px;border-radius:12px;max-width:500px;text-align:left;box-shadow:0 10px 25px rgba(0,0,0,0.3);position:relative;}
-.close-btn{float:right;background:#f44336; padding:5px 10px; border-radius:5px; color:white; border:none; cursor:pointer;}
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --success: #10b981;
+    --danger: #ef4444;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+}
+
+body { 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    margin: 0; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+
+#welcome-screen, #menu-container, #table-container { 
+    text-align: center; 
+    background: var(--card-bg); 
+    padding: 40px; 
+    border-radius: 16px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+    margin-top: 60px;
+    width: 100%;
+    max-width: 800px;
+    box-sizing: border-box;
+}
+
+h1 { color: var(--primary); margin-bottom: 10px; font-weight: 800; }
+p { color: #64748b; margin-bottom: 25px; }
+
+input, select { 
+    padding: 12px; 
+    margin: 5px; 
+    border-radius: 8px; 
+    border: 1px solid #e2e8f0; 
+    font-size: 1rem; 
+    width: 100%;
+    max-width: 300px;
+    box-sizing: border-box;
+}
+
+button { 
+    cursor: pointer; 
+    background: var(--primary); 
+    color: white; 
+    border: none; 
+    font-weight: bold; 
+    padding: 12px 25px;
+    border-radius: 8px;
+    transition: all 0.2s; 
+}
+
+button:hover { transform: translateY(-2px); opacity: 0.9; }
 
 #teacher-btn, #home-btn {
-  position:fixed;
-  top:20px;
-  padding:10px 15px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:bold;
-  z-index:1000;
+    position: fixed;
+    top: 20px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
-#teacher-btn { right:20px; background:#f44336; color:white; }
-#home-btn { left:20px; background:#4CAF50; color:white; }
+#teacher-btn { right: 20px; background: var(--danger); color: white; }
+#home-btn { left: 20px; background: var(--success); color: white; }
 
-#teacher-modal .modal-content input{width:80%; padding:10px; margin:5px; border-radius:5px; border:1px solid #ccc; font-size:1rem;}
-#teacher-modal .modal-content button{margin-top:10px;}
-#teacher-error{color:red;margin-top:10px;}
+/* Grid de Configuração */
+.config-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+    gap: 15px; 
+    margin: 20px 0;
+    text-align: left;
+}
+.config-grid label { font-weight: bold; font-size: 0.9rem; color: #475569; }
+.config-grid input, .config-grid select { max-width: 100%; }
 
-.question-card { display: none; }
+/* Estilo da Tabela de Exercício */
+table { border-collapse: collapse; margin: 20px auto; background: white; border-radius: 12px; overflow: hidden; border: 2px solid #f1f5f9; }
+td { border: 1px solid #f1f5f9; text-align: center; font-size: 32px; min-width: 120px; font-weight: 800; padding: 15px; }
+.correct { background: #dcfce7 !important; color: #166534; border: 2px solid var(--success); }
+.wrong { background: #fee2e2 !important; color: #991b1b; border: 2px solid var(--danger); }
+
+.answer-input { 
+    width: 150px; 
+    text-align: center; 
+    font-size: 28px; 
+    font-weight: bold; 
+    border: 2px solid var(--primary); 
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.method-buttons { margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.method-btn { background: #e2e8f0; color: #475569; font-size: 0.85rem; padding: 8px 15px; }
+.method-btn:hover { background: #cbd5e1; color: var(--text); }
+
+/* Modais */
+.modal { display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(15,23,42,0.6); justify-content:center; align-items:center; backdrop-filter: blur(4px); }
+.modal-content { background:white; padding:30px; border-radius:16px; max-width:450px; text-align:left; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); position:relative; }
+.close-btn { float:right; background: #f1f5f9; color: #64748b; padding: 5px 12px; border-radius: 6px; border:none; cursor:pointer; font-weight:bold; }
+
+.question-card { display: none; animation: fadeIn 0.4s ease-in-out; }
 .question-card.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
 
-<button id="home-btn" onclick="location.reload()">Home</button>
-<button id="teacher-btn" onclick="openTeacherLogin()">Teacher</button>
+<button id="home-btn" onclick="location.reload()">🏠 Home</button>
+<button id="teacher-btn" onclick="openTeacherLogin()">🔑 Teacher</button>
 
 <div id="welcome-screen">
-<img src="BrainFitBitCapy.png" class="logo-main" alt="BrainFitBit Logo">
-<h1>Welcome to BrainFitBit!</h1>
-<p>Enter your name to start training.</p>
-<input type="text" id="student-name" placeholder="Student name">
-<br><br>
-<button onclick="showMenu()" style="background:#4CAF50;padding:12px 40px">Next</button>
+    <img src="BrainFitBitCapy.png" style="max-width: 180px; margin-bottom: 20px;" alt="Logo">
+    <h1>Welcome to BrainFitBit</h1>
+    <p>Train your mind with the art of Soroban.</p>
+    <input type="text" id="student-name" placeholder="Type your name...">
+    <br><br>
+    <button onclick="showMenu()" style="background: var(--success); padding: 15px 50px; font-size: 1.1rem;">Next Step</button>
 
-<h3>Soroban Methods</h3>
-<div class="method-buttons">
-<button class="method-btn" onclick="openModal('simple')">Simple</button>
-<button class="method-btn" onclick="openModal('small')">Small Friend</button>
-<button class="method-btn" onclick="openModal('big')">Big Friend</button>
-<button class="method-btn" onclick="openModal('mixed')">Mixed</button>
-</div>
+    <h3 style="margin-top: 40px; font-size: 0.9rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Study Methods</h3>
+    <div class="method-buttons">
+        <button class="method-btn" onclick="openModal('simple')">Simple</button>
+        <button class="method-btn" onclick="openModal('small')">Small Friend</button>
+        <button class="method-btn" onclick="openModal('big')">Big Friend</button>
+        <button class="method-btn" onclick="openModal('mixed')">Mixed</button>
+    </div>
 </div>
 
 <div id="menu-container" style="display:none">
-<img src="BrainFitBitCapy.png" class="logo-small" alt="Logo">
-<h2 id="greeting-text"></h2>
-<hr>
-<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:15px">
-<label><b>Method</b><br>
-<select id="method">
-<option value="Simple">Simple</option>
-<option value="Small Friend">Small Friend</option>
-<option value="Big Friend">Big Friend</option>
-<option value="Mixed">Mixed</option>
-<option value="All">All</option>
-</select></label>
-<label><b>Columns</b><br>
-<input type="number" id="columns" value="1" min="1" max="13"></label>
-<label><b>Rows</b><br>
-<input type="number" id="rows" value="5" min="2" max="15"></label>
-<label><b>Questions</b><br>
-<input type="number" id="questions" value="5" min="1" max="10"></label>
-</div>
-<br>
-<button onclick="generate()" style="padding:15px 40px;font-size:1.2rem">Let's do it!</button>
+    <h2 id="greeting-text"></h2>
+    <hr style="border:0; border-top:1px solid #f1f5f9; margin: 20px 0;">
+    <div class="config-grid">
+        <div>
+            <label>Method</label><br>
+            <select id="method">
+                <option value="Simple">Simple</option>
+                <option value="Small Friend">Small Friend</option>
+                <option value="Big Friend">Big Friend</option>
+                <option value="Mixed">Mixed</option>
+                <option value="All">All</option>
+            </select>
+        </div>
+        <div>
+            <label>Columns</label><br>
+            <input type="number" id="columns" value="1" min="1" max="13">
+        </div>
+        <div>
+            <label>Rows</label><br>
+            <input type="number" id="rows" value="5" min="2" max="15">
+        </div>
+        <div>
+            <label>Questions</label><br>
+            <input type="number" id="questions" value="5" min="1" max="10">
+        </div>
+    </div>
+    <br>
+    <button onclick="generate()" style="padding:15px 60px; font-size:1.2rem; width: 100%;">Let's Go!</button>
 </div>
 
 <div id="table-container" style="display:none">
-<h2 id="table-title"></h2>
-<div id="table-wrapper">
-    <div id="quiz-flow"></div>
+    <h2 id="table-title"></h2>
+    <div id="table-wrapper">
+        <div id="quiz-flow"></div>
+    </div>
+    <div id="result-text"></div>
+    <div id="restart-container"></div>
 </div>
-<div id="result-text" style="font-size:1.5rem;font-weight:bold;margin:15px"></div>
-<div id="restart-container"></div>
-</div>
 
-<div id="simple" class="modal"><div class="modal-content">
-<button class="close-btn" onclick="closeModal()">Close</button>
-<h2>Simple Method</h2>
-<p>Simple = soma/subtração direta. Não exige o uso do 5 (amigo pequeno) nem transporte para a próxima coluna (amigo grande).</p>
-</div></div>
-
-<div id="small" class="modal"><div class="modal-content">
-<button class="close-btn" onclick="closeModal()">Close</button>
-<h2>Small Friend</h2>
-<p>Pares que somam 5: (1,4), (2,3). Usado quando as contas de baixo não são suficientes, mas a conta de 5 está livre.</p>
-</div></div>
-
-<div id="big" class="modal"><div class="modal-content">
-<button class="close-btn" onclick="closeModal()">Close</button>
-<h2>Big Friend</h2>
-<p>Pares que somam 10: (1,9), (2,8), (3,7), (4,6), (5,5). Usado quando a soma ultrapassa 9 em uma coluna.</p>
-</div></div>
-
-<div id="mixed" class="modal"><div class="modal-content">
-<button class="close-btn" onclick="closeModal()">Close</button>
-<h2>Mixed Method</h2>
-<p>Combina técnicas de Big Friend e Small Friend simultaneamente para realizar uma operação.</p>
-</div></div>
+<div id="simple" class="modal"><div class="modal-content"><button class="close-btn" onclick="closeModal()">X</button><h2>Simple</h2><p>Direto. Sem fórmulas de amigos.</p></div></div>
+<div id="small" class="modal"><div class="modal-content"><button class="close-btn" onclick="closeModal()">X</button><h2>Small Friend</h2><p>Fórmulas baseadas no 5.</p></div></div>
+<div id="big" class="modal"><div class="modal-content"><button class="close-btn" onclick="closeModal()">X</button><h2>Big Friend</h2><p>Fórmulas baseadas no 10.</p></div></div>
+<div id="mixed" class="modal"><div class="modal-content"><button class="close-btn" onclick="closeModal()">X</button><h2>Mixed</h2><p>Combinação de Big e Small Friend.</p></div></div>
 
 <div id="teacher-modal" class="modal">
-  <div class="modal-content" style="max-width:400px;text-align:center;">
-    <button class="close-btn" onclick="closeModal()">Close</button>
-    <h2>Teacher Login</h2>
-    <input type="text" id="teacher-id" placeholder="ID"><br>
-    <input type="password" id="teacher-pass" placeholder="Password"><br>
-    <button onclick="loginTeacher()">Login</button>
-    <p id="teacher-error"></p>
-  </div>
+    <div class="modal-content" style="max-width:400px; text-align:center;">
+        <button class="close-btn" onclick="closeModal()">X</button>
+        <h2 style="color: var(--danger)">Teacher Admin</h2>
+        <input type="text" id="teacher-id" placeholder="Username" style="max-width: 100%; margin-bottom: 10px;">
+        <input type="password" id="teacher-pass" placeholder="Password" style="max-width: 100%;">
+        <button onclick="loginTeacher()" style="background: var(--danger); width: 100%; margin-top: 15px;">Login</button>
+        <p id="teacher-error"></p>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -144,43 +204,37 @@ td{border:1px solid #555;text-align:center;font-size:32px;min-width:100px;font-w
 let data=[], studentName="", currentQuestionIndex = 0;
 
 function showMenu(){
-  let name=document.getElementById("student-name").value.trim();
-  if(!name){ alert("Please enter your name"); return; }
-  studentName=name;
-  document.getElementById("welcome-screen").style.display="none";
-  document.getElementById("menu-container").style.display="block";
-  document.getElementById("greeting-text").innerText = "Hello "+studentName+"!";
+    let name=document.getElementById("student-name").value.trim();
+    if(!name){ alert("Please enter your name"); return; }
+    studentName=name;
+    document.getElementById("welcome-screen").style.display="none";
+    document.getElementById("menu-container").style.display="block";
+    document.getElementById("greeting-text").innerText = "Hello, "+studentName+"!";
 }
 
-function closeModal(){
-  document.querySelectorAll('.modal').forEach(m => m.style.display='none');
-}
-
+function closeModal(){ document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 function openModal(id){ document.getElementById(id).style.display="flex"; }
 function openTeacherLogin(){ document.getElementById("teacher-modal").style.display="flex"; }
 
 // MOTOR DE CÁLCULO MANTIDO
 function generateNumber(maxColumns){
-  let column = Math.floor(Math.random() * maxColumns);
-  let digit = Math.floor(Math.random() * 9) + 1;
-  return digit * Math.pow(10, column);
+    let column = Math.floor(Math.random() * maxColumns);
+    let digit = Math.floor(Math.random() * 9) + 1;
+    return digit * Math.pow(10, column);
 }
 
 function validMove(total, num, method, op) {
     let newTotal = op === 1 ? total + num : total - num;
     if (newTotal < 0) return false;
     if (method === "All") return true;
-
     let sTotal = total.toString().split('').reverse();
     let sNum = num.toString().split('').reverse();
     let maxLen = Math.max(sTotal.length, sNum.length);
-
     for (let i = 0; i < maxLen; i++) {
         let dTotal = parseInt(sTotal[i] || 0);
         let dNum = parseInt(sNum[i] || 0);
         let hasFive = dTotal >= 5;
         let lowerBeads = dTotal % 5;
-
         if (method === "Simple") {
             if (op === 1) {
                 if (dTotal + dNum > 9) return false;
@@ -203,65 +257,58 @@ function validMove(total, num, method, op) {
             }
         }
         else if (method === "Big Friend") {
-            if (op === 1) {
-                if (dTotal + dNum < 10) return false; 
-            }
+            if (op === 1) { if (dTotal + dNum < 10) return false; }
         }
     }
     return true;
 }
 
 function generate(){
-  let method=document.getElementById("method").value;
-  let cols=parseInt(document.getElementById("columns").value);
-  let rows=parseInt(document.getElementById("rows").value);
-  let q=parseInt(document.getElementById("questions").value);
-  data=[];
-  currentQuestionIndex = 0;
-  for(let i=0;i<q;i++){
-    let moves=[], total=0;
-    for(let r=0;r<rows;r++){
-      let num, sign, tries=0, valid=false;
-      while(!valid && tries<150){
-        num = generateNumber(cols);
-        sign = r===0 ? 1 : (Math.random()<0.5 ? 1 : -1);
-        valid = validMove(total,num,method,sign);
-        tries++;
-      }
-      if(!valid){ num = 1; sign = 1; }
-      moves.push(sign*num);
-      total += sign*num;
+    let method=document.getElementById("method").value;
+    let cols=parseInt(document.getElementById("columns").value);
+    let rows=parseInt(document.getElementById("rows").value);
+    let q=parseInt(document.getElementById("questions").value);
+    data=[];
+    currentQuestionIndex = 0;
+    for(let i=0;i<q;i++){
+        let moves=[], total=0;
+        for(let r=0;r<rows;r++){
+            let num, sign, tries=0, valid=false;
+            while(!valid && tries<150){
+                num = generateNumber(cols);
+                sign = r===0 ? 1 : (Math.random()<0.5 ? 1 : -1);
+                valid = validMove(total,num,method,sign);
+                tries++;
+            }
+            if(!valid){ num = 1; sign = 1; }
+            moves.push(sign*num);
+            total += sign*num;
+        }
+        data.push({moves:moves,total:total, studentAnswer: null});
     }
-    data.push({moves:moves,total:total, studentAnswer: null});
-  }
-  renderFlow(rows,q);
-  document.getElementById("menu-container").style.display="none";
-  document.getElementById("table-container").style.display="block";
-  document.getElementById("table-title").innerText = "Good luck "+studentName+"!";
+    renderFlow(rows,q);
+    document.getElementById("menu-container").style.display="none";
+    document.getElementById("table-container").style.display="block";
+    document.getElementById("table-title").innerText = "Good Luck!";
 }
 
 function renderFlow(rows, q) {
     let container = document.getElementById("quiz-flow");
     container.innerHTML = "";
-    
     data.forEach((question, index) => {
         let div = document.createElement("div");
         div.className = `question-card ${index === 0 ? 'active' : ''}`;
         div.id = `q-card-${index}`;
-        
-        let tableHtml = `<h3>Equation ${index + 1} of ${q}</h3><table>`;
+        let tableHtml = `<p style="font-weight:bold; color:var(--primary)">Equation ${index + 1} of ${q}</p><table>`;
         for (let r = 0; r < rows; r++) {
             let v = question.moves[r];
             let display = r === 0 ? Math.abs(v) : (v < 0 ? "-" + Math.abs(v) : "+" + v);
             tableHtml += `<tr><td>${display}</td></tr>`;
         }
         tableHtml += `<tr><td><input type='number' id='ans-${index}' class='answer-input' placeholder='?'></td></tr></table>`;
-        
         div.innerHTML = tableHtml;
-        
         let btnBox = document.createElement("div");
         btnBox.style.marginTop = "20px";
-        
         if (index < q - 1) {
             let nextBtn = document.createElement("button");
             nextBtn.innerText = "Next Question";
@@ -269,12 +316,11 @@ function renderFlow(rows, q) {
             btnBox.appendChild(nextBtn);
         } else {
             let checkBtn = document.createElement("button");
-            checkBtn.innerText = "Check Answers";
-            checkBtn.style.background = "#4CAF50";
+            checkBtn.innerText = "Finish & Check";
+            checkBtn.style.background = "var(--success)";
             checkBtn.onclick = check;
             btnBox.appendChild(checkBtn);
         }
-        
         div.appendChild(btnBox);
         container.appendChild(div);
     });
@@ -282,46 +328,33 @@ function renderFlow(rows, q) {
 
 function nextQuestion(index) {
     let input = document.getElementById(`ans-${index}`);
-    if(!input.value) { alert("Please answer first!"); return; }
-    
+    if(!input.value) { alert("Please type your answer!"); return; }
     document.getElementById(`q-card-${index}`).classList.remove('active');
     document.getElementById(`q-card-${index + 1}`).classList.add('active');
+    document.getElementById(`ans-${index + 1}`).focus();
 }
 
 function check(){
-  let correct=0;
-  let summaryHtml = "<h3>Final Results</h3><table style='margin-bottom:20px;'>";
-  
-  for(let i=0;i<data.length;i++){
-    let input=document.getElementById("ans-"+i);
-    let val=Number(input.value);
-    data[i].studentAnswer = val;
-    
-    let isCorrect = (val === data[i].total);
-    if(isCorrect) correct++;
-    
-    summaryHtml += `<tr>
-        <td style='font-size:18px;'>Eq ${i+1}</td>
-        <td class='${isCorrect ? "correct" : "wrong"}' style='font-size:18px;'>
-            Your: ${val} | Correct: ${data[i].total}
-        </td>
-    </tr>`;
-  }
-  summaryHtml += "</table>";
-  
-  document.getElementById("quiz-flow").innerHTML = summaryHtml;
-  document.getElementById("result-text").innerText="Final Score: "+correct+" / "+data.length;
-  
-  document.getElementById("restart-container").innerHTML=
-    "<button onclick='restart()' style='background:#2196F3'>Restart</button><button onclick='savePDF()' style='background:#607D8B'>Save PDF</button>";
-}
-
-function restart(){
-  document.getElementById("table-container").style.display="none";
-  document.getElementById("menu-container").style.display="block";
-  document.getElementById("result-text").innerText="";
-  document.getElementById("restart-container").innerHTML="";
-  data=[];
+    let correct=0;
+    let summaryHtml = "<h3 style='margin-bottom:20px'>Review</h3><table style='width:100%'>";
+    for(let i=0;i<data.length;i++){
+        let val=Number(document.getElementById("ans-"+i).value);
+        data[i].studentAnswer = val;
+        let isCorrect = (val === data[i].total);
+        if(isCorrect) correct++;
+        summaryHtml += `<tr>
+            <td style='font-size:18px;'>Question ${i+1}</td>
+            <td class='${isCorrect ? "correct" : "wrong"}' style='font-size:18px;'>
+                ${val} ${isCorrect ? '✔' : '(Correct: '+data[i].total+')'}
+            </td>
+        </tr>`;
+    }
+    summaryHtml += "</table>";
+    document.getElementById("quiz-flow").innerHTML = summaryHtml;
+    document.getElementById("result-text").innerHTML = `<h2 style="color:var(--primary)">Final Score: ${correct} / ${data.length}</h2>`;
+    document.getElementById("restart-container").innerHTML=
+        "<button onclick='location.reload()' style='background:var(--primary)'>Restart</button> " + 
+        "<button onclick='savePDF()' style='background:#64748b'>Save PDF</button>";
 }
 
 function loginTeacher() {
@@ -335,21 +368,17 @@ function loginTeacher() {
 }
 
 function savePDF(){
-  const { jsPDF } = window.jspdf;
-  let doc = new jsPDF();
-  doc.setFontSize(16);
-  doc.text("BrainFitBit Exercises", 15, 20);
-  doc.setFontSize(12);
-  doc.text("Student: "+studentName, 15, 30);
-  let y=45;
-  data.forEach((item,i)=>{
-    doc.setTextColor(0,0,0);
-    doc.text("Q"+(i+1)+": "+item.moves.join(" | "), 15, y);
-    doc.text("Result: "+item.total + " (Your Answer: "+item.studentAnswer+")", 130, y);
-    y+=10;
-    if(y > 275) { doc.addPage(); y = 20; }
-  });
-  doc.save("BrainFitBit_Results.pdf");
+    const { jsPDF } = window.jspdf;
+    let doc = new jsPDF();
+    doc.text("BrainFitBit Training Report", 15, 20);
+    doc.text("Student: " + studentName, 15, 30);
+    let y = 45;
+    data.forEach((item, i) => {
+        doc.text(`Q${i+1}: Result ${item.total} (Your Answer: ${item.studentAnswer})`, 15, y);
+        y += 10;
+        if(y > 270) { doc.addPage(); y = 20; }
+    });
+    doc.save("BrainFitBit_Report.pdf");
 }
 </script>
 </body>
