@@ -103,7 +103,7 @@ function generateHomeworkLink(){
   let rows=Math.max(1,parseInt(document.getElementById("teacher-rows").value)||5);
   let q=Math.max(1,parseInt(document.getElementById("teacher-questions").value)||5);
 
-  let url=`brainfitbit.html?student=${encodeURIComponent(studentName)}&method=${method}&cols=${cols}&rows=${rows}&q=${q}`;
+  let url=`student.html?student=${encodeURIComponent(studentName)}&method=${method}&cols=${cols}&rows=${rows}&q=${q}`;
   document.getElementById("generated-link").innerText=url;
   prompt("Copy the link for the student:",url);
 }
@@ -121,8 +121,8 @@ function sendHomework(){
   let rows=Math.max(1,parseInt(document.getElementById("teacher-rows").value)||5);
   let q=Math.max(1,parseInt(document.getElementById("teacher-questions").value)||5);
 
-  let homeworkLink = `${window.location.origin}/brainfitbit.html?student=${encodeURIComponent(studentName)}&method=${method}&cols=${cols}&rows=${rows}&q=${q}`;
-  
+  let homeworkLink = `${window.location.origin}/student.html?student=${encodeURIComponent(studentName)}&method=${method}&cols=${cols}&rows=${rows}&q=${q}`;
+   
   emailjs.send('service_qs2cyzt','template_u09c9if',{
     student_name: studentName,
     homework_link: homeworkLink,
