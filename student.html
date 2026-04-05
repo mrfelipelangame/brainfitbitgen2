@@ -35,6 +35,19 @@
             margin-top: 20px;
         }
 
+        /* --- ATUALIZAÇÃO: ESTILO DO CRONÔMETRO --- */
+        #timer-pill {
+            background: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 2px solid #e2e8f0;
+            font-weight: bold;
+            color: var(--danger);
+            margin: 0 auto 20px auto;
+            display: table;
+            font-size: 1.2rem;
+        }
+
         h1 { 
             color: var(--primary); 
             text-align: center; 
@@ -49,7 +62,6 @@
             font-size: 1.1rem;
         }
 
-        /* Tabela de Exercícios */
         .table-scroll { 
             overflow-x: auto; 
             margin-bottom: 30px; 
@@ -75,7 +87,6 @@
 
         tr:nth-child(even) { background: #f8fafc; }
         
-        /* Estilo dos Inputs */
         .answer-input { 
             width: 85%; 
             padding: 12px; 
@@ -94,7 +105,6 @@
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
-        /* Estados de Resposta */
         .correct { 
             background: #dcfce7 !important; 
             border-color: var(--success) !important; 
@@ -107,7 +117,6 @@
             color: #991b1b !important; 
         }
 
-        /* Botões e Ações */
         .actions { 
             display: flex; 
             justify-content: center; 
@@ -143,11 +152,11 @@
             display: none;
         }
 
-        /* Ajustes para impressão */
         @media print {
             body { background: white; padding: 0; }
             .container { box-shadow: none; border: none; padding: 0; }
-            .actions, button { display: none !important; }
+            /* Esconde o cronômetro na impressão */
+            .actions, button, #timer-pill { display: none !important; }
             td { font-size: 20px; padding: 10px; }
         }
     </style>
@@ -155,6 +164,7 @@
 <body>
 
 <div class="container">
+    <div id="timer-pill">Time: 00:00</div>
     <h1 id="welcome-msg">Soroban Training</h1>
     <p class="subtitle" id="config-info">Analyzing parameters...</p>
 
@@ -180,6 +190,9 @@
 
 <script>
     let homeworkData = [];
+    // --- ATUALIZAÇÃO: VARIÁVEIS DE CONTROLE DO TEMPO ---
+    let startTime, timerInterval;
+
     const params = new URLSearchParams(window.location.search);
     
     const config = {
@@ -192,8 +205,6 @@
 
     document.getElementById('welcome-msg').innerText = `Keep going, ${config.student}!`;
     document.getElementById('config-info').innerText = `Method: ${config.method} | Columns: ${config.cols} | Questions: ${config.q}`;
-
-    // --- LÓGICA DE SOROBAN (IDENTICA AO SEU TRAINER) ---
 
     function generateFullNumber(maxColumns) {
         let num = 0;
@@ -219,7 +230,7 @@
             let hasFive = dTotal >= 5;
             let lowerBeads = dTotal % 5;
 
-            if (op === 1) { // Adição
+            if (op === 1) {
                 let isSimple = (dNum <= (4 - lowerBeads)) || (dNum >= 5 && !hasFive && (dNum - 5 <= 4 - lowerBeads));
                 let isSmall = (dNum < 5) && (dNum > (4 - lowerBeads)) && !hasFive;
                 let isBig = (dTotal + dNum >= 10);
@@ -236,7 +247,7 @@
                 }
                 else if (method === "Mixed") { if (!isMixed && !isSimple) return false; }
             } 
-            else { // Subtração
+            else {
                 let isSimpleSub = (dNum <= lowerBeads) || (dNum >= 5 && hasFive && (dNum - 5 <= lowerBeads));
                 let isSmallSub = (dNum < 5) && (dNum > lowerBeads) && hasFive;
                 let isBigSub = (dTotal < dNum);
@@ -273,6 +284,18 @@
             homeworkData.push({ moves, total: currentTotal, studentAnswer: null });
         }
         renderTable();
+
+        // --- ATUALIZAÇÃO: INICIA O CRONÔMETRO ---
+        startTime = Date.now();
+        timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    // --- ATUALIZAÇÃO: FUNÇÃO DE CÁLCULO DO TEMPO ---
+    function updateTimer() {
+        const diff = Math.floor((Date.now() - startTime) / 1000);
+        const m = Math.floor(diff / 60);
+        const s = diff % 60;
+        document.getElementById('timer-pill').innerText = `Time: ${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
     }
 
     function renderTable() {
@@ -300,6 +323,9 @@
     }
 
     function checkAnswers() {
+        // --- ATUALIZAÇÃO: PARA O CRONÔMETRO ---
+        clearInterval(timerInterval);
+
         let correctCount = 0;
         homeworkData.forEach((item, i) => {
             const input = document.getElementById(`ans-${i}`);
@@ -330,7 +356,8 @@
         const exportData = homeworkData.map(item => ({
             moves: item.moves.map(m => [m]),
             total: item.total,
-            studentAnswers: [item.studentAnswer]
+            studentAnswers: [item.studentAnswer],
+            timeUsed: document.getElementById('timer-pill').innerText // Inclui o tempo no JSON
         }));
 
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
